@@ -665,7 +665,7 @@ function parseBin(bytes){
 // ═══════════════════════════════════════════════════════════
 // OPERATORS (from ET)
 // ═══════════════════════════════════════════════════════════
-const OPERS={1:'ADIF',2:'RENFE',3:'COMSA RAIL',4:'CONTINENTAL RAIL',5:'ACCIONA RAIL',6:'ACTIVA RAIL',7:'TRACCIÓN RAIL',8:'EUSKO TRENBIDEAK',9:'ARCELORMITTAL SIDERAIL',10:'EWSI',11:'LOGITREN FERROVIARIA',12:'FESUR',13:'AOPJA',14:'SPENO',15:'SNCF',16:'FERROVIAL',17:'FGC',18:'COPASA',19:'ALPHA TRAINS'};
+const OPERS={1:'ADIF',2:'RENFE',3:'COMSA RAIL TRANSPORT',4:'CONTINENTAL RAIL',5:'ACCIONA RAIL SERVICES',6:'ACTIVA RAIL',7:'TRACCIÓN RAIL',8:'EUSKO TRENBIDEAK',9:'ARCELORMITTAL SIDERAIL',10:'EWSI',11:'LOGITREN FERROVIARIA',12:'FESUR',13:'AOPJA',14:'SPENO',15:'SNCF',16:'FERROVIAL',17:'FGC',18:'COPASA',19:'ALPHA TRAINS',20:'ALSA TRAINS',21:'COSFESA',22:'AGRUPACIÓN GUINOVART Y OSHSA',23:'CONVENSA',24:'SACYR-NEOPUL',25:'LOW COST RAIL',26:'RAXELL RAIL',27:'HITACHI RAIL',28:'STADLER RAIL',29:'FCC',30:'ALSA RAIL',31:'ACCIONA',32:'VIAS',33:'CAF',34:'ATHOS RAIL',35:'CAPTRAIN ESPAÑA',36:'AUXILIAR DE PATRIMONIO FERROVIARIO'};
 
 // ═══════════════════════════════════════════════════════════
 // RENDER
@@ -2045,10 +2045,14 @@ function parsePdfBlock(block){
 
   // Operator: map "Propietario" text to code
   const OPER_MAP = {
-    'adif':1,'renfe':2,'comsa':3,'continental':4,'acciona':5,
+    'adif':1,'renfe':2,'comsa':3,'continental':4,'acciona rail':5,
     'activa':6,'traccion':7,'tracción':7,'eusko':8,'arcelormittal':9,
     'ewsi':10,'logitren':11,'fesur':12,'aopja':13,'speno':14,
-    'sncf':15,'ferrovial':16,'fgc':17,'copasa':18,'alpha':19
+    'sncf':15,'ferrovial':16,'fgc':17,'copasa':18,'alpha trains':19,
+    'alsa trains':20,'cosfesa':21,'guinovart':22,'convensa':23,
+    'sacyr':24,'low cost':25,'raxell':26,'hitachi':27,'stadler':28,
+    'fcc':29,'alsa rail':30,'acciona':31,'vias':32,'caf':33,
+    'athos':34,'captrain':35,'auxiliar de patrimonio':36
   };
   const propTxt = get('propietario').toLowerCase();
   let operCode = 2; // default RENFE
