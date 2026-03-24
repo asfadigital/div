@@ -2560,8 +2560,7 @@ function showHexView(){
     [20, 1, 'Dist. aviso S3-5 (dm)',   b => b[0]+' dm'],
     [21, 1, 'Tiempo aviso S3-5 (s)',   b => b[0]+' s'],
     [22, 1, 'Vel. Máx. BTS (km/h)',    b => b[0]+' km/h'],
-    [23, 3, 'Checksum (3 bytes LE)',    b => '0x'+(b[0]|(b[1]<<8)|(b[2]<<16)).toString(16).toUpperCase().padStart(6,'0')],
-    [26, 1, 'Residuo Word4 (reservado)',b => '0x'+b[0].toString(16).toUpperCase().padStart(2,'0')],
+    [23, 4, 'Checksum + residuo Word4', b => '0x'+(b[0]|(b[1]<<8)|(b[2]<<16)).toString(16).toUpperCase().padStart(6,'0')+' (byte[26]=0x'+b[3].toString(16).toUpperCase().padStart(2,'0')+')'],
   ];
 
   let html = '<div class="hex-grid">';
