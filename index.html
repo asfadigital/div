@@ -1847,6 +1847,7 @@ function exportPDF(){
 // PDF IMPORT (PDF.js)
 // ═══════════════════════════════════════════════════════════
 let pdfParsedVehicles = [];
+let pdfParsedVersion = 18;  // versión extraída del nombre del PDF
 
 function triggerPdfImport(){
   if(vehicles.length > 0){
@@ -1881,7 +1882,7 @@ function handlePdfImport(inp){
   const reader = new FileReader();
   reader.onload = async (e) => {
     try {
-      await parsePdf(new Uint8Array(e.target.result));
+      await parsePdf(new Uint8Array(e.target.result), file.name);
     } catch(err) {
       document.getElementById('pdf-sub').textContent = 'Error: ' + err.message;
     }
@@ -1923,6 +1924,14 @@ async function parsePdf(data, fname){
   }
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  // Extraer número de versión del nombre del fichero (ej. "BDASFADIVxxx.pdf" → xxx)
+  if(fname){
+    const m = fname.match(/(\d+)\.(pdf|bin)$/i);
+    pdfParsedVersion = m ? parseInt(m[1], 10) : 18;
+  } else {
+    pdfParsedVersion = 18;
+  }
 
   const pdf = await pdfjsLib.getDocument({ data }).promise;
   const nPages = pdf.numPages;
@@ -2153,8 +2162,8 @@ function applyPdfImport(){
   binBuf = new Uint8Array(N * REC + TRAIL);
   vehicles = [];
   modified = new Set();
-  metaVer = 18; metaVerType = 0xFF;
-  fileName = 'BDASFADIV018.bin';
+  metaVer = pdfParsedVersion; metaVerType = 0xFF;
+  fileName = 'BDASFADIV' + String(pdfParsedVersion).padStart(3, '0') + '.bin';
 
   pdfParsedVehicles.forEach((v, i) => {
     v.idx = i; v.offset = i * REC;
@@ -2166,7 +2175,7 @@ function applyPdfImport(){
 
   // Write trailer
   const tOff = N * REC;
-  binBuf[tOff] = 0xFF; binBuf[tOff+1] = 18;
+  binBuf[tOff] = 0xFF; binBuf[tOff+1] = pdfParsedVersion & 0xFF;
   binBuf[tOff+2] = 27; binBuf[tOff+3] = 0;
   const crc = crc32(binBuf, tOff+4);
   binBuf[tOff+4]=crc&0xFF; binBuf[tOff+5]=(crc>>8)&0xFF;
