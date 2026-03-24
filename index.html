@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BDASFADIV — Visor / Editor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{
+  --bg:#f0f4f8; --s:#fff; --s2:#f7f9fc; --bd:#dde3ec; --bd2:#c5d0de;
+  --acc:#1a6fc4; --accl:#e8f0fb;
+  --grn:#16a34a; --grnl:#dcfce7;
+  --red:#dc2626; --redl:#fee2e2;
+  --amb:#d97706; --ambl:#fef3c7;
+  --txt:#1e293b; --tm:#475569; --td:#94a3b8;
+  --sh:0 1px 3px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;font-size:13px;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* HEADER */
+header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh);padding:0 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;min-height:52px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.badge{background:var(--acc);color:#fff;font-weight:700;font-size:11px;letter-spacing:1px;padding:3px 8px;border-radius:4px}
+.brand h1{font-size:14px;font-weight:700;white-space:nowrap}
+.brand small{color:var(--td);font-weight:400}
+.sep{width:1px;background:var(--bd);height:28px;flex-shrink:0}
+.mpills{display:flex;gap:5px;flex-wrap:wrap;flex:1;align-items:center}
+.mp{display:flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:3px 8px;white-space:nowrap}
+.mpl{font-size:9px;color:var(--td);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.mpv{font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.cok{color:var(--grn)} .cwarn{color:var(--amb)} .cerr{color:var(--red)}
+.hact{display:flex;gap:6px;flex-shrink:0;margin-left:auto;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.bo{background:var(--s);border:1px solid var(--bd2);color:var(--tm)} .bo:hover{border-color:var(--acc);color:var(--acc);background:var(--accl)}
+.bp{background:var(--acc);color:#fff} .bp:hover{background:#1559a0}
+.bg{background:var(--grn);color:#fff} .bg:hover{background:#15803d}
+.br{background:var(--red);color:#fff} .br:hover{background:#b91c1c}
+.bw{background:var(--amb);color:#fff} .bw:hover{background:#b45309}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* LAYOUT */
+.app{display:grid;grid-template-columns:210px 1fr;grid-template-rows:auto 1fr;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{background:var(--s);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;grid-row:1/3}
+.sh{padding:10px 12px;border-bottom:1px solid var(--bd);background:var(--s2)}
+.sh h2{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--td);font-weight:600;margin-bottom:6px}
+.sbx{width:100%;background:var(--s);border:1px solid var(--bd2);border-radius:5px;padding:5px 9px;color:var(--txt);font-family:inherit;font-size:12px;outline:none;transition:border .15s}
+.sbx:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(26,111,196,.1)}
+.vlist{overflow-y:auto;flex:1;padding:3px 0}
+.vi{display:flex;align-items:center;gap:6px;padding:6px 12px;cursor:pointer;transition:background .1s;border-left:3px solid transparent}
+.vi:hover{background:var(--bg)} .vi.act{background:var(--accl);border-left-color:var(--acc)}
+.vi.mod .vn::after{content:'✎';font-size:9px;color:var(--amb);margin-left:3px}
+.vidx{font-size:10px;color:var(--td);min-width:18px;text-align:right;font-family:'JetBrains Mono',monospace}
+.vn{font-weight:600;font-size:12px;font-family:'JetBrains Mono',monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vsys{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:700;flex-shrink:0}
+.save{background:#dbeafe;color:#1d4ed8} .ssicva{background:#fef9c3;color:#854d0e}
+
+/* TOOLBAR */
+.tb{grid-column:2;background:var(--s);border-bottom:1px solid var(--bd);padding:7px 16px;display:flex;align-items:center;gap:8px}
+.tveh{font-size:15px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tveh em{color:var(--acc);font-style:normal} .tveh small{font-size:11px;color:var(--td);font-weight:400;margin-left:6px}
+.nbtn{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:4px 11px;cursor:pointer;font-size:12px;font-family:inherit;color:var(--tm);transition:all .15s}
+.nbtn:hover:not(:disabled){border-color:var(--acc);color:var(--acc)} .nbtn:disabled{opacity:.3;cursor:not-allowed}
+.ecnt{font-size:11px;color:var(--td);white-space:nowrap}
+.ebadge{background:var(--ambl);color:var(--amb);border:1px solid var(--amb);border-radius:5px;padding:2px 9px;font-size:10px;font-weight:700}
+
+/* MAIN */
+.main{overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+/* CARD */
+.card{background:var(--s);border:1px solid var(--bd);border-radius:7px;box-shadow:var(--sh);overflow:hidden}
+.ch{background:var(--s2);border-bottom:1px solid var(--bd);padding:8px 14px;display:flex;align-items:center;gap:7px}
+.cdot{width:6px;height:6px;border-radius:50%;background:var(--acc);flex-shrink:0}
+.ct{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tm)}
+.cinfo{font-size:10px;color:var(--td);margin-left:auto}
+
+/* FIELD GRID */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bd)}
+.fgrid.cols3{grid-template-columns:1fr 1fr 1fr}
+.fgrid.cols1{grid-template-columns:1fr}
+.fr{background:var(--s);display:flex;align-items:center;padding:7px 12px;gap:8px;min-height:36px;transition:background .15s}
+.fr:hover{background:var(--s2)}
+.fk{font-size:11px;color:var(--tm);font-weight:500;flex:1;min-width:0}
+.fk small{display:block;font-size:9px;color:var(--td);margin-top:1px}
+.fv{font-weight:600;font-size:12px;color:var(--txt);white-space:nowrap;font-family:'JetBrains Mono',monospace;text-align:right}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700}
+.tsi{background:var(--grnl);color:var(--grn)} .tno{background:#f1f5f9;color:var(--td)} .tstr{background:var(--accl);color:var(--acc)} .twarn{background:var(--ambl);color:var(--amb)}
+
+/* SPEED BARS */
+.srow{display:flex;align-items:center;gap:10px;padding:0 14px;margin:8px 0}
+.sk{font-size:11px;font-weight:500;color:var(--tm);min-width:140px;white-space:nowrap}
+.bwrap{flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:4px;height:22px;position:relative;overflow:hidden}
+.bbar{height:100%;background:linear-gradient(90deg,#1a6fc4aa,var(--acc));border-radius:3px;transition:width .4s}
+.bnum{position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace}
+
+/* BITS GRID */
+.bgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;padding:12px 14px}
+.bcel{background:var(--s2);border:1px solid var(--bd);border-radius:4px;padding:6px 4px;text-align:center;cursor:default;transition:all .15s}
+.bcel.on{background:var(--accl);border-color:var(--acc)} .bcel.on .bval{color:var(--acc)}
+.bcel.grn{background:var(--grnl);border-color:var(--grn)} .bcel.grn .bval{color:var(--grn)}
+.bcel.red{background:var(--redl);border-color:var(--red)} .bcel.red .bval{color:var(--red)}
+.bbit{font-size:9px;color:var(--td);font-weight:600} .bval{font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace} .bdesc{font-size:8px;color:var(--td);line-height:1.2;margin-top:2px}
+
+/* UMBRALES PILLS */
+.upills{display:flex;gap:6px;padding:12px 14px;flex-wrap:wrap}
+.upill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1.5px solid;font-size:11px;font-weight:700;cursor:default;transition:all .15s}
+.upill.on{background:var(--grnl);border-color:var(--grn);color:var(--grn)}
+.upill.off{background:#f1f5f9;border-color:var(--bd);color:var(--td)}
+.upill .uled{width:8px;height:8px;border-radius:50%}
+.upill.on .uled{background:var(--grn);box-shadow:0 0 4px rgba(22,163,74,.5)}
+.upill.off .uled{background:#cbd5e1}
+
+/* CHECKSUMS */
+.csr{display:flex;gap:1px;background:var(--bd)}
+.csc{flex:1;background:var(--s);padding:11px 14px}
+.csl{font-size:10px;color:var(--td);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.csv{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+.csok{color:var(--grn)} .csbad{color:var(--red)}
+
+/* LOAD SCREEN */
+.load{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:60px 20px;text-align:center;flex:1}
+.load-icon{font-size:52px;opacity:.25}
+.load h2{font-size:19px;font-weight:700}
+.load p{color:var(--td);max-width:400px;line-height:1.7}
+.dz{border:2px dashed var(--bd2);border-radius:12px;padding:32px 44px;cursor:pointer;transition:all .2s;background:var(--s);margin-top:4px}
+.dz:hover,.dz.dg{border-color:var(--acc);background:var(--accl)}
+.dz p{color:var(--tm);font-size:12px;margin-top:8px}
+
+/* EDIT INPUTS */
+.einp,.esel{background:var(--s);border:2px solid var(--acc);border-radius:4px;padding:2px 7px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--txt);outline:none}
+.einp:focus,.esel:focus{border-color:var(--amb);box-shadow:0 0 0 3px rgba(217,119,6,.12)}
+.einp{width:90px} .esel{width:auto;max-width:160px}
+
+/* EDIT HIGHLIGHT */
+.em .ef{cursor:pointer;border-radius:3px;transition:background .12s}
+.em .ef:hover{background:#fffbeb;outline:2px dashed var(--amb);outline-offset:-2px}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center}
+.ov.open{display:flex}
+.modal{background:var(--s);border-radius:12px;padding:28px 28px 22px;width:min(520px,92vw);box-shadow:0 8px 32px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:4px}
+.modal p.sub{color:var(--td);font-size:12px;margin-bottom:18px}
+.mfg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mfl label{font-size:11px;font-weight:600;color:var(--tm);display:block;margin-bottom:4px}
+.mfl input,.mfl select{width:100%;background:var(--s);border:1px solid var(--bd2);border-radius:5px;padding:6px 9px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--txt);outline:none}
+.mfl input:focus,.mfl select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(26,111,196,.1)}
+.mfl.span2{grid-column:span 2}
+.mfl.full{grid-column:1/-1}
+.mact{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--bd)}
+.mdiv{grid-column:1/-1;height:1px;background:var(--bd);margin:4px 0}
+.msub{grid-column:1/-1;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--td);margin-top:4px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:#1e293b;color:#fff;padding:9px 18px;border-radius:7px;font-size:12px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:transform .25s ease;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+
+/* OPERATOR PICKER */
+.oper-picker{position:fixed;z-index:600;background:var(--s);border:1px solid var(--bd2);
+  border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);min-width:260px;max-height:320px;
+  display:flex;flex-direction:column;overflow:hidden}
+.oper-picker-search{padding:8px 10px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.oper-picker-search input{width:100%;border:1px solid var(--bd2);border-radius:5px;
+  padding:5px 9px;font-family:inherit;font-size:12px;outline:none;background:var(--s2)}
+.oper-picker-search input:focus{border-color:var(--acc)}
+.oper-picker-list{overflow-y:auto;flex:1}
+.oper-opt{padding:7px 12px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:8px;
+  transition:background .1s}
+.oper-opt:hover,.oper-opt.sel{background:var(--accl)}
+.oper-opt.sel{font-weight:700;color:var(--acc)}
+.oper-opt .ok{color:var(--acc);font-size:10px;margin-left:auto}
+.oper-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--td);
+  min-width:22px;text-align:right}
+
+/* WARN */
+.warn-row{background:var(--ambl);border-left:3px solid var(--amb);padding:8px 14px;font-size:11px;color:var(--amb);font-weight:500}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="badge">ASFA</span>
+    <h1>BDASFADIV <small>· Visor / Editor (ET 03.365.008.6)</small></h1>
+  </div>
+  <div class="sep"></div>
+  <div class="mpills">
+    <div class="mp"><span class="mpl">Fichero</span><span class="mpv" id="hf">—</span></div>
+    <div class="mp"><span class="mpl">Tamaño</span><span class="mpv" id="hs">—</span></div>
+    <div class="mp"><span class="mpl">Vehículos</span><span class="mpv" id="hn">—</span></div>
+    <div class="mp"><span class="mpl">Versión</span><span class="mpv" id="hv">—</span></div>
+    <div class="mp"><span class="mpl">CRC32 Fichero</span><span class="mpv" id="hcf">—</span></div>
+    <div class="mp"><span class="mpl">CRC32 Calc.</span><span class="mpv" id="hcc">—</span></div>
+  </div>
+  <div class="hact">
+    <button class="btn bo" onclick="triggerLoad()">📂 Abrir BIN</button>
+    <button class="btn bp" onclick="openNewBinModal()">🆕 Nuevo BIN</button>
+    <button class="btn bo" id="btn-edit" onclick="toggleEdit()" disabled>✏️ Editar</button>
+    <button class="btn bo" id="btn-new"  onclick="openNewModal()" disabled>➕ Nueva UT</button>
+    <button class="btn bo" id="btn-pdf"  onclick="exportPDF()"  disabled>📄 Generar PDF</button>
+    <button class="btn bg" id="btn-exp"  onclick="exportBin()" disabled>💾 Grabar BIN</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sh">
+      <h2>Tipos de Vehículo</h2>
+      <input class="sbx" id="search" placeholder="Buscar…" oninput="filterList()">
+    </div>
+    <div class="vlist" id="vlist">
+      <div style="padding:30px 16px;text-align:center">
+        <div style="font-size:36px;opacity:.2">🚆</div>
+        <p style="font-size:11px;color:var(--td);margin-top:8px">Abre un fichero BIN</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOOLBAR -->
+  <div class="tb" id="tb">
+    <div class="tveh" id="tveh">—</div>
+    <button class="nbtn" id="bp" onclick="nav(-1)" disabled>◀</button>
+    <span class="ecnt" id="ecnt">— / —</span>
+    <button class="nbtn" id="bn" onclick="nav(1)" disabled>▶</button>
+    <span class="ebadge" id="ebadge" style="display:none">EDITANDO</span>
+    <button class="btn br" id="btn-del" onclick="deleteVehicle()" style="display:none;padding:4px 10px;font-size:11px">🗑 Eliminar UT</button>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main" id="mp">
+    <div class="load">
+      <div class="load-icon">📋</div>
+      <h2>Visor / Editor BDASFADIV</h2>
+      <p>Abre un fichero <strong>BDASFADIVxxx.BIN</strong> para visualizar y editar la base de datos de tipos de vehículo del sistema ASFA Digital embarcado.</p>
+      <div class="dz" id="dz">
+        <div style="font-size:30px">📂</div>
+        <p>Arrastra un fichero <strong>.BIN</strong> aquí, o haz clic para seleccionarlo</p>
+        <button class="btn bp" style="margin-top:10px" onclick="triggerLoad()">Seleccionar BIN existente</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;color:var(--td);font-size:12px;margin-top:4px">
+        <div style="height:1px;width:60px;background:var(--bd)"></div>o<div style="height:1px;width:60px;background:var(--bd)"></div>
+      </div>
+      <button class="btn bp" onclick="openNewBinModal()" style="background:var(--grn)">🆕 Crear nuevo BIN desde cero</button>
+    </div>
+  </main>
+</div>
+
+<!-- FILE INPUT -->
+<input type="file" id="fi" accept=".bin,.BIN" style="display:none" onchange="handleFile(this)">
+
+<!-- NEW / EDIT MODAL -->
+<div class="ov" id="modal">
+  <div class="modal">
+    <h3 id="mod-title">Nueva Unidad de Tracción</h3>
+    <p class="sub" id="mod-sub">Define los parámetros para el nuevo tipo de vehículo</p>
+    <div class="mfg" id="mod-form"></div>
+    <div class="mact">
+      <button class="btn bo" onclick="closeModal()">Cancelar</button>
+      <button class="btn bp" id="mod-ok" onclick="modalOk()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NUEVO BIN MODAL -->
+<div class="ov" id="modal-newbin">
+  <div class="modal" style="max-width:420px">
+    <h3>Nuevo BIN desde cero</h3>
+    <p class="sub">Configura los parámetros globales del fichero BDASFADIVxxx.BIN</p>
+    <div class="mfg">
+      <div class="mfl span2">
+        <label>Nombre del fichero (sin extensión) *</label>
+        <input id="nb-fname" maxlength="40" value="BDASFADIV001" placeholder="BDASFADIV001">
+      </div>
+      <div class="mfl">
+        <label>Versión de la BDD *</label>
+        <input id="nb-ver" type="number" min="1" max="255" value="4">
+      </div>
+      <div class="mfl">
+        <label>Tipo de versión admisible</label>
+        <select id="nb-vertype">
+          <option value="255">FFh — Igual o superior</option>
+          <option value="0">00h — Versión exacta</option>
+        </select>
+      </div>
+      <div class="mfl span2" style="background:var(--accl);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;font-size:11px;color:var(--tm)">
+        ℹ️ Se creará un BIN vacío (sin vehículos). Usa <strong>➕ Nueva UT</strong> para añadir tipos de vehículo uno a uno, o <strong>💾 Grabar BIN</strong> en cualquier momento para descargar el fichero.
+      </div>
+    </div>
+    <div class="mact">
+      <button class="btn bo" onclick="closeNewBinModal()">Cancelar</button>
+      <button class="btn bg" onclick="initNewBin()">Crear BIN vacío</button>
+    </div>
+  </div>
+</div>
+
+<!-- GRABAR BIN MODAL -->
+<div class="ov" id="modal-save">
+  <div class="modal" style="max-width:400px">
+    <h3>Grabar BIN</h3>
+    <p class="sub">Confirma el nombre del fichero antes de descargar</p>
+    <div class="mfg">
+      <div class="mfl span2">
+        <label>Nombre del fichero</label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input id="save-fname" style="flex:1" maxlength="60">
+          <span style="font-size:12px;color:var(--td);white-space:nowrap">.bin</span>
+        </div>
+      </div>
+      <div class="mfl span2" id="save-info" style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;font-size:11px;color:var(--tm)"></div>
+    </div>
+    <div class="mact">
+      <button class="btn bo" onclick="closeSaveModal()">Cancelar</button>
+      <button class="btn bg" onclick="doExportBin()">💾 Descargar</button>
+    </div>
+  </div>
+</div>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════
+// CRC32  (polinomio ET 03.365.008.6, inicio 0, máscara 0)
+// g(x) = x32+x30+x27+x25+x22+x20+x13+x12+x11+x10+x8+x7+x6+x5+x4+1
+// ═══════════════════════════════════════════════════════════
+const POLY = 0x4A503DF1; // Reversed poly from VBA
+function buildCT(){
+  const t=new Uint32Array(256);
+  for(let i=0;i<256;i++){
+    let r=i;
+    for(let j=0;j<8;j++){
+      if(r&1){ r=((r>>>1)&0x3FFFFFFF)|((r&0x40000000)?0x40000000:0); r^=POLY; }
+      else { r=((r>>>1)&0x3FFFFFFF)|((r&0x40000000)?0x40000000:0); }
+    }
+    t[i]=r;
+  }
+  return t;
+}
+const CT=buildCT();
+function crc32(buf,len){
+  let c=0;
+  for(let i=0;i<len;i++){
+    const lo=c&0xFF;
+    const sh=((c&0x7FFFFFFF)>>>8)|((c&0x80000000)?0x800000:0);
+    c=sh^CT[(lo^buf[i])&0xFF];
+  }
+  return c>>>0;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS from ET 03.365.008.6
+// Offset base for each UT record: 27 bytes
+// Layout:
+//  [0..5]  6 bytes ASCII name
+//  [6..7]  Word1 (LE) — bits de configuración 1
+//  [8..9]  Word2 (LE) — bits de configuración 2
+//  [10]    Velocidad máxima (km/h)
+//  [11]    Velocidad máxima ASFA-Básico (km/h)
+//  [12..13] Código operador (LE, 2 bytes)
+//  [14]    Nº pulsos/vuelta tacogenerador
+//  [15..16] Diámetro mínimo rueda mm (LE)
+//  [17..18] Diámetro máximo rueda mm (LE)
+//  [19]    Dist. S3-4 (decámetros)
+//  [20]    Tiempo S3-5 (segundos, V≥5 km/h)  ← TIEMCONT=BYTEL
+//  [21]    Dist. S3-5 (decámetros)           ← DISTCONT=BYTEH
+//  [22]    Vel. máx. BTS (km/h)
+//  [23..26] CheckSum 4 bytes (suma de bytes 0..22)
+//
+// Word1 bits (bit0=LSB):
+//  0: Fase  (0=Fase1, 1=Fase2)
+//  1: Cabina (0=Monocabina, 1=Bicabina)
+//  2: Sistema (0=SICVA, 1=AVE)
+//  3: Conex. serie registrador (0=No, 1=Sí)
+//  4: Modo Convencional (0=No disp, 1=Disp)
+//  5: Modo AVE (0=No disp, 1=Disp)
+//  6: Umbral 5 km/h (0=No, 1=Sí)
+//  7: Umbral 35 km/h (0=No, 1=Sí)
+//  8: Umbral 50 km/h (0=No, 1=Sí)
+//  9: Umbral 60 km/h (0=No, 1=Sí)
+//  10: Umbral 160 km/h (0=No, 1=Sí)
+//  11: Umbral 180 km/h (0=No, 1=Sí)
+//  12: Tipo salida analógica (0=Tensión, 1=Corriente)
+//  13: Fondo tensión (0=5V, 1=10V)
+//  14: Nº reconoc. L1 (0=1 reconoc., 1=5 reconoc.) — solo Fase1
+//  15: Curvas ASFA-Básico (0=tablas estándar, 1=tablas ASFA-D)
+//
+// Word2 bits:
+//  0: Curvas T=100 (0=tablas T=100, 1=T=120)
+//  1: Monocabina subsistemas (0=1 subsist., 1=2 subsist.)
+//  2: Modo RAM (0=No disp, 1=Disp)
+//  3: Modo BTS (0=No disp, 1=Disp)
+//  4: Variante monocabina (0=variante1, 1=variante2)
+//  5..15: Reserva
+// ═══════════════════════════════════════════════════════════
+
+// Trailer: VERSI(2) + TAMBDD(2) + CRC32(4) = 8 bytes
+const REC=27, TRAIL=8;
+
+let binBuf=null, vehicles=[], curIdx=0, filtered=[], editMode=false, modified=new Set();
+let metaVer=4, metaVerType=0xFF, fileName='';
+
+// Decode one vehicle from binBuf at offset o
+function decVeh(o,idx){
+  const b=binBuf;
+  const name=Array.from({length:6},(_,i)=>String.fromCharCode(b[o+i])).join('').trimEnd();
+  const w1=b[o+6]|(b[o+7]<<8);
+  const w2=b[o+8]|(b[o+9]<<8);
+  const bt=(w,n)=>((w>>n)&1)===1;
+  let suma=0; for(let i=0;i<23;i++) suma+=b[o+i];
+  const chks=b[o+23]|(b[o+24]<<8)|(b[o+25]<<16); // 3 bytes LE, byte[26] es residuo WORD4
+  const rawChks=[b[o+23],b[o+24],b[o+25],b[o+26]]; // preservar bytes originales
+  return{
+    idx, offset:o, name,
+    // Word1
+    fase2:bt(w1,0), bicabina:bt(w1,1), sistAVE:bt(w1,2), conexSerie:bt(w1,3),
+    modoConv:bt(w1,4), modoAVE:bt(w1,5),
+    umb5:bt(w1,6), umb35:bt(w1,7), umb50:bt(w1,8), umb60:bt(w1,9),
+    umb160:bt(w1,10), umb180:bt(w1,11),
+    salCorriente:bt(w1,12), fondo10V:bt(w1,13), recs5:bt(w1,14), curvasAsfaD:bt(w1,15),
+    // Word2
+    curvT120:bt(w2,0), mono2subsist:bt(w2,1), modoRAM:bt(w2,2), modoBTS:bt(w2,3), variante2:bt(w2,4),
+    w1raw:w1, w2raw:w2,
+    velmax:b[o+10], velbas:b[o+11],
+    oper:b[o+12]|(b[o+13]<<8),
+    pulsos:b[o+14],
+    dmin:b[o+15]|(b[o+16]<<8),
+    dmax:b[o+17]|(b[o+18]<<8),
+    distrec:b[o+19], distS35:b[o+20], tiemS35:b[o+21],
+    velbts:b[o+22],
+    rawChks,  // bytes originales 23-26 para preservar en regrabado sin modificación
+    suma, chks
+  };
+}
+
+function encVeh(v){
+  const b=binBuf, o=v.offset;
+  const nm=(v.name+'      ').substring(0,6);
+  for(let i=0;i<6;i++) b[o+i]=nm.charCodeAt(i)&0xFF;
+  // Word1
+  let w1=0;
+  if(v.fase2)      w1|=(1<<0); if(v.bicabina)    w1|=(1<<1);
+  if(v.sistAVE)    w1|=(1<<2); if(v.conexSerie)  w1|=(1<<3);
+  if(v.modoConv)   w1|=(1<<4); if(v.modoAVE)     w1|=(1<<5);
+  if(v.umb5)       w1|=(1<<6); if(v.umb35)       w1|=(1<<7);
+  if(v.umb50)      w1|=(1<<8); if(v.umb60)       w1|=(1<<9);
+  if(v.umb160)     w1|=(1<<10);if(v.umb180)      w1|=(1<<11);
+  if(v.salCorriente)w1|=(1<<12);if(v.fondo10V)   w1|=(1<<13);
+  if(v.recs5)      w1|=(1<<14);if(v.curvasAsfaD) w1|=(1<<15);
+  b[o+6]=w1&0xFF; b[o+7]=(w1>>8)&0xFF;
+  // Word2
+  let w2=0;
+  if(v.curvT120)   w2|=(1<<0); if(v.mono2subsist)w2|=(1<<1);
+  if(v.modoRAM)    w2|=(1<<2); if(v.modoBTS)     w2|=(1<<3);
+  if(v.variante2)  w2|=(1<<4);
+  b[o+8]=w2&0xFF; b[o+9]=(w2>>8)&0xFF;
+  b[o+10]=v.velmax&0xFF; b[o+11]=v.velbas&0xFF;
+  b[o+12]=v.oper&0xFF; b[o+13]=(v.oper>>8)&0xFF;
+  b[o+14]=v.pulsos&0xFF;
+  b[o+15]=v.dmin&0xFF; b[o+16]=(v.dmin>>8)&0xFF;
+  b[o+17]=v.dmax&0xFF; b[o+18]=(v.dmax>>8)&0xFF;
+  b[o+19]=v.distrec&0xFF; b[o+20]=v.distS35&0xFF; b[o+21]=v.tiemS35&0xFF;
+  b[o+22]=v.velbts&0xFF;
+  // Checksum
+  let s=0; for(let i=0;i<23;i++) s+=b[o+i];
+  v.suma=s; v.chks=s;
+  // Checksum: si el registro tiene bytes originales y NO fue modificado,
+  // preservarlos exactamente. Solo recalcular si fue modificado por el usuario.
+  if(v.rawChks && !v._dirty){
+    b[o+23]=v.rawChks[0]; b[o+24]=v.rawChks[1];
+    b[o+25]=v.rawChks[2]; b[o+26]=v.rawChks[3];
+  } else {
+    // Registro modificado: recalcular checksum como suma de bytes 0..22
+    b[o+23]=s&0xFF; b[o+24]=(s>>8)&0xFF; b[o+25]=(s>>16)&0xFF;
+    if(v.rawChks) b[o+26]=v.rawChks[3]; else b[o+26]=0;
+  }
+}
+
+function parseBin(bytes){
+  binBuf=bytes;
+  const total=bytes.length;
+  const numVeh=Math.floor((total-TRAIL)/REC);
+  vehicles=[];
+  for(let i=0;i<numVeh;i++) vehicles.push(decVeh(i*REC,i));
+  const tOff=numVeh*REC;
+  metaVerType=bytes[tOff]; metaVer=bytes[tOff+1];
+  const calcCrc=crc32(bytes,tOff+4);
+  const fileCrc=(bytes[tOff+4])|(bytes[tOff+5]<<8)|(bytes[tOff+6]<<16)|(bytes[tOff+7]<<24);
+  return{numVeh,total,calcCrc,fileCrc:fileCrc>>>0};
+}
+
+// ═══════════════════════════════════════════════════════════
+// OPERATORS (from ET)
+// ═══════════════════════════════════════════════════════════
+const OPERS={1:'ADIF',2:'RENFE',3:'COMSA RAIL',4:'CONTINENTAL RAIL',5:'ACCIONA RAIL',6:'ACTIVA RAIL',7:'TRACCIÓN RAIL',8:'EUSKO TRENBIDEAK',9:'ARCELORMITTAL SIDERAIL',10:'EWSI',11:'LOGITREN FERROVIARIA',12:'FESUR',13:'AOPJA',14:'SPENO',15:'SNCF',16:'FERROVIAL',17:'FGC',18:'COPASA',19:'ALPHA TRAINS'};
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+const SI=v=>`<span class="tag ${v?'tsi':'tno'}">${v?'SI':'NO'}</span>`;
+const STR=v=>`<span class="tag tstr">${v}</span>`;
+const WARN=v=>`<span class="tag twarn">⚠ ${v}</span>`;
+
+function sbar(lbl,val,max=250){
+  const p=Math.min(100,Math.round((val/max)*100));
+  return`<div class="srow"><span class="sk">${lbl}</span><div class="bwrap"><div class="bbar" style="width:${p}%"></div><span class="bnum">${val} km/h</span></div></div>`;
+}
+
+function frRow(label,sub,val,field,etype,editMode){
+  const edAttr=editMode&&field?`data-f="${field}" data-t="${etype}" class="fr ef"`:`class="fr"`;
+  return`<div ${edAttr}><span class="fk">${label}${sub?`<small>${sub}</small>`:''}</span><span class="fv">${val}</span></div>`;
+}
+
+function renderV(idx){
+  const v=vehicles[idx]; if(!v) return;
+  const N=vehicles.length;
+  document.getElementById('tveh').innerHTML=`<em>${v.name}</em><small>UT ${idx+1} de ${N}</small>`;
+  document.getElementById('ecnt').textContent=`${idx+1} / ${N}`;
+  document.getElementById('bp').disabled=idx===0;
+  document.getElementById('bn').disabled=idx===N-1;
+  const em=editMode, csOk=v.suma===v.chks;
+
+  // Validate: bits 6-11 (umbrales), max 3 active
+  const umbCount=[v.umb5,v.umb35,v.umb50,v.umb60,v.umb160,v.umb180].filter(Boolean).length;
+  // BTS requires ConvAvailable (bit4 or bit5)
+  const btsWarn=v.modoBTS&&!v.modoConv&&!v.modoAVE&&!v.modoRAM;
+
+  const ec=em?'em':'';
+  const oper=OPERS[v.oper]?`${v.oper} — ${OPERS[v.oper]}`:`${v.oper}`;
+
+  document.getElementById('mp').innerHTML=`<div class="${ec}" id="vv">
+
+  ${umbCount>3?`<div class="warn-row">⚠ Advertencia: ${umbCount} umbrales activos (máximo 3 permitidos por la especificación)</div>`:''}
+  ${btsWarn?`<div class="warn-row">⚠ Modo BTS activo sin ningún modo principal disponible</div>`:''}
+
+  <!-- IDENTIFICACIÓN -->
+  <div class="card">
+    <div class="ch"><div class="cdot"></div><span class="ct">Identificación del Vehículo</span><span class="cinfo">6 bytes ASCII</span></div>
+    <div class="fgrid cols3">
+      ${frRow('Denominación','Código ASCII 6 chars',STR(v.name),'name','txt',em)}
+      ${frRow('Sistema','Word1 bit2',v.sistAVE?STR('AVE'):STR('SICVA'),'sistAVE','tog-sist',em)}
+      ${frRow('Tipo Cabina','Word1 bit1',v.bicabina?STR('BICABINA'):STR('MONOCABINA'),'bicabina','tog-cab',em)}
+      ${frRow('Fase','Word1 bit0',STR(v.fase2?'Fase 2':'Fase 1'),'fase2','tog-fase',em)}
+      ${frRow('Operador','Word LE offset 12-13',STR(oper),'oper','sel-oper',em)}
+      ${frRow('Conex. Registrador','Word1 bit3',SI(v.conexSerie),'conexSerie','tog',em)}
+    </div>
+  </div>
+
+  <!-- MODOS -->
+  <div class="card">
+    <div class="ch"><div class="cdot"></div><span class="ct">Modos de Operación</span><span class="cinfo">Word1 bits 4-5, Word2 bits 2-3</span></div>
+    <div class="fgrid">
+      ${frRow('Modo Convencional','Word1 bit4',SI(v.modoConv),'modoConv','tog',em)}
+      ${frRow('Modo AVE','Word1 bit5',SI(v.modoAVE),'modoAVE','tog',em)}
+      ${frRow('Modo RAM','Word2 bit2',SI(v.modoRAM),'modoRAM','tog',em)}
+      ${frRow('Modo BTS','Word2 bit3',SI(v.modoBTS),'modoBTS','tog',em)}
+    </div>
+  </div>
+
+  <!-- VELOCIDADES -->
+  <div class="card">
+    <div class="ch"><div class="cdot"></div><span class="ct">Velocidades Máximas</span></div>
+    <div style="padding-top:8px;padding-bottom:8px">
+      ${sbar('Vel. Máx. General (offset 18)',v.velmax)}
+      ${sbar('Vel. Máx. ASFA-Básico (offset 19)',v.velbas)}
+      ${sbar('Vel. Máx. BTS (offset 38)',v.velbts)}
+    </div>
+    <div class="fgrid cols3">
+      ${frRow('Vel. Máx. General','Offset 18, 1 byte, km/h',`${v.velmax} km/h`,'velmax','num',em)}
+      ${frRow('Vel. Máx. ASFA-Básico','Offset 19, 1 byte, km/h',`${v.velbas} km/h`,'velbas','num',em)}
+      ${frRow('Vel. Máx. BTS','Offset 38, 1 byte, km/h',`${v.velbts} km/h`,'velbts','num',em)}
+    </div>
+  </div>
+
+  <!-- UMBRALES -->
+  <div class="card">
+    <div class="ch"><div class="cdot"></div><span class="ct">Umbrales de Velocidad</span><span class="cinfo">Word1 bits 6-11 · máx. 3 activos</span></div>
+    <div class="upills">
+      ${[['umb5','5 km/h','bit6'],['umb35','35 km/h','bit7'],['umb50','50 km/h','bit8'],['umb60','60 km/h','bit9'],['umb160','160 km/h','bit10'],['umb180','180 km/h','bit11']].map(([k,l,b])=>`
+        <div class="upill ${v[k]?'on':'off'}${em?' ef':''}${em?` data-f="${k}" data-t="tog"`:''}">
+          <div class="uled"></div>${l}<small style="font-size:9px;opacity:.6;margin-left:2px">${b}</small>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- TACOGENERADOR & RUEDAS -->
+  <div class="card">
+    <div class="ch"><div class="cdot"></div><span class="ct">Tacogenerador y Ruedas</span></div>
+    <div class="fgrid cols3">
+      ${frRow('Pulsos/Vuelta','Offset 30, 1 byte',`${v.pulsos} p/v`,'pulsos','num',em)}
+      ${frRow('Diámetro Mínimo','Offset 31-32, 2 bytes LE, mm',`${v.dmin} mm`,'dmin','num',em)}
+      ${frRow('Diámetro Máximo','Offset 33-34, 2 bytes LE, mm',`${v.dmax} mm`,'dmax','num',em)}
+    </div>
+    ${v.dmax<=v.dmin?`<div class="warn-row">⚠ Diámetro máximo (${v.dmax}) ≤ diámetro mínimo (${v.dmin})</div>`:''}
+  </div>
+
+  <!-- SONIDOS S3 -->
+  <div class="card">
+    <div class="ch"><div class="cdot"></div><span class="ct">Recordatorio de Parada (Sonidos S3)</span></div>
+    <div class="fgrid cols3">
+      ${frRow('Dist. S3-4','Offset 35, decámetros',v.distrec>0?`${v.distrec} dm = ${v.distrec*10} m`:'0 (desact.)',  'distrec','num',em)}
+      ${frRow('Dist. S3-5','Offset 37, decámetros',v.distS35>0?`${v.distS35} dm`:'0 (desact.)',  'distS35','num',em)}
+      ${frRow('Tiempo S3-5','Offset 36, V≥5 km/h, segundos',v.tiemS35>0?`${v.tiemS35} s`:'0 (desact.)','tiemS35','num',em)}
+    </div>
+  </div>
+
+  <!-- CONFIG SALIDA Y CURVAS -->
+  <div class="card">
+    <div class="ch"><div class="cdot"></div><span class="ct">Configuración Analógica y Curvas</span></div>
+    <div class="fgrid">
+      ${frRow('Tipo Salida Analógica','Word1 bit12',SI(!v.salCorriente)+'&nbsp;'+STR(v.salCorriente?'CORRIENTE 4-20mA':'TENSIÓN 0-5/0-10V'),'salCorriente','tog-sal',em)}
+      ${frRow('Fondo Escala Tensión','Word1 bit13 (solo si tensión)',STR(v.fondo10V?'0-10V':'0-5V'),'fondo10V','tog-fdo',em)}
+      ${frRow('Nº Reconoc. L1 ASFA-B','Word1 bit14 (solo Fase1)',STR(v.recs5?'5 reconocimientos':'1 reconocimiento'),'recs5','tog-recs',em)}
+      ${frRow('Curvas ASFA-Básico','Word1 bit15',STR(v.curvasAsfaD?'Tablas ASFA-Digital':'Tablas Estándar'),'curvasAsfaD','tog-curv',em)}
+      ${frRow('Curvas T=','Word2 bit0',STR(v.curvT120?'T=120':'T=100'),'curvT120','tog-t',em)}
+      ${frRow('Monocabina subsistemas','Word2 bit1',STR(v.mono2subsist?'2 subsistemas':'1 subsistema'),'mono2subsist','tog',em)}
+      ${frRow('Variante Monocabina','Word2 bit4',STR(v.variante2?'Variante 2':'Variante 1'),'variante2','tog-var',em)}
+    </div>
+  </div>
+
+  <!-- CHECKSUM -->
+  <div class="card">
+    <div class="ch"><div class="cdot"></div><span class="ct">Integridad del Registro</span><span class="cinfo">4 bytes (suma bytes 0..22)</span></div>
+    <div class="csr">
+      <div class="csc"><div class="csl">Suma Calculada</div><div class="csv">${v.suma} (0x${v.suma.toString(16).toUpperCase()})</div></div>
+      <div class="csc"><div class="csl">CheckSum en Fichero</div><div class="csv">${v.chks} (0x${(v.chks>>>0).toString(16).toUpperCase()})</div></div>
+      <div class="csc"><div class="csl">Estado</div><div class="csv ${csOk?'csok':'csbad'}">${csOk?'✓ CORRECTO':'✗ NO COINCIDE'}</div></div>
+    </div>
+  </div>
+
+  </div>`;
+
+  if(em) attachEd(idx);
+}
+
+// ═══════════════════════════════════════════════════════════
+// EDIT
+// ═══════════════════════════════════════════════════════════
+function attachEd(idx){
+  document.querySelectorAll('.ef').forEach(el=>el.addEventListener('click',()=>editClick(el,idx)));
+}
+
+function editClick(el,idx){
+  const f=el.dataset.f, t=el.dataset.t, v=vehicles[idx];
+  if(!f||!v) return;
+
+  if(t==='num'){
+    const valEl=el.querySelector('.fv,.bnum,.csv');
+    if(!valEl) return;
+    const cur=parseInt(v[f],10)||0;
+    const inp=document.createElement('input');
+    inp.type='number'; inp.className='einp'; inp.value=cur; inp.min=0; inp.max=9999;
+    const orig=valEl.innerHTML; valEl.innerHTML=''; valEl.appendChild(inp);
+    inp.focus(); inp.select();
+    const commit=()=>{const nv=parseInt(inp.value,10);if(!isNaN(nv)&&nv>=0){v[f]=nv;applyMod(idx);}else valEl.innerHTML=orig;};
+    inp.addEventListener('blur',commit);
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commit();}if(e.key==='Escape')valEl.innerHTML=orig;});
+    return;
+  }
+
+  if(t==='txt'){
+    const valEl=el.querySelector('.fv');
+    if(!valEl) return;
+    const inp=document.createElement('input');
+    inp.type='text'; inp.className='einp'; inp.value=v[f]; inp.maxLength=6;
+    inp.style.width='120px'; inp.style.textTransform='uppercase';
+    const orig=valEl.innerHTML; valEl.innerHTML=''; valEl.appendChild(inp);
+    inp.focus(); inp.select();
+    const commit=()=>{const nv=inp.value.toUpperCase().padEnd(6,' ').substring(0,6);v[f]=nv.trimEnd();applyMod(idx);};
+    inp.addEventListener('blur',commit);
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commit();}if(e.key==='Escape')valEl.innerHTML=orig;});
+    return;
+  }
+
+  if(t==='sel-oper'){
+    openOperPicker(el, v, idx);
+    return;
+  }
+
+  // Toggles
+  const tmap={
+    'tog':()=>v[f]=!v[f],
+    'tog-sist':()=>v.sistAVE=!v.sistAVE,
+    'tog-cab':()=>v.bicabina=!v.bicabina,
+    'tog-fase':()=>v.fase2=!v.fase2,
+    'tog-sal':()=>v.salCorriente=!v.salCorriente,
+    'tog-fdo':()=>v.fondo10V=!v.fondo10V,
+    'tog-recs':()=>v.recs5=!v.recs5,
+    'tog-curv':()=>v.curvasAsfaD=!v.curvasAsfaD,
+    'tog-t':()=>v.curvT120=!v.curvT120,
+    'tog-var':()=>v.variante2=!v.variante2,
+  };
+  (tmap[t]||tmap['tog'])();
+  applyMod(idx);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// OPERATOR PICKER (custom dropdown)
+// ═══════════════════════════════════════════════════════════
+function openOperPicker(el, v, idx){
+  // Remove any existing picker
+  closeOperPicker();
+
+  const rect=el.getBoundingClientRect();
+  const picker=document.createElement('div');
+  picker.className='oper-picker';
+  picker.id='oper-picker';
+
+  // Position below the row, aligned to left edge; flip up if near bottom
+  const spaceBelow=window.innerHeight-rect.bottom;
+  const pickerH=320;
+  let top=rect.bottom+4;
+  if(spaceBelow<pickerH && rect.top>pickerH) top=rect.top-pickerH-4;
+  picker.style.cssText=`top:${top}px;left:${Math.max(4,rect.left)}px;width:${Math.max(280,rect.width)}px`;
+
+  // Search box
+  picker.innerHTML=`
+    <div class="oper-picker-search">
+      <input id="oper-search" placeholder="Buscar operador…" autocomplete="off">
+    </div>
+    <div class="oper-picker-list" id="oper-list"></div>`;
+  document.body.appendChild(picker);
+
+  function buildList(q){
+    const list=document.getElementById('oper-list');
+    if(!list) return;
+    const entries=Object.entries(OPERS).filter(([k,nm])=>
+      !q || k.includes(q) || nm.toLowerCase().includes(q.toLowerCase())
+    );
+    list.innerHTML=entries.map(([k,nm])=>`
+      <div class="oper-opt${parseInt(k)===v.oper?' sel':''}" data-k="${k}">
+        <span class="oper-num">${k}</span>
+        <span>${nm}</span>
+        ${parseInt(k)===v.oper?'<span class="ok">✓</span>':''}
+      </div>`).join('');
+    list.querySelectorAll('.oper-opt').forEach(opt=>{
+      opt.addEventListener('mousedown',e=>{
+        e.preventDefault(); // evita blur en el search input
+        const nk=parseInt(opt.dataset.k,10);
+        v.oper=nk; applyMod(idx);
+        closeOperPicker();
+      });
+    });
+    // Scroll selected into view
+    const sel=list.querySelector('.sel');
+    if(sel) sel.scrollIntoView({block:'nearest'});
+  }
+
+  buildList('');
+
+  const sinp=document.getElementById('oper-search');
+  sinp.addEventListener('input',()=>buildList(sinp.value));
+  sinp.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){e.preventDefault();closeOperPicker();}
+    if(e.key==='Enter'){
+      const first=document.querySelector('#oper-list .oper-opt');
+      if(first){const nk=parseInt(first.dataset.k,10);v.oper=nk;applyMod(idx);closeOperPicker();}
+    }
+  });
+  setTimeout(()=>sinp.focus(),30);
+
+  // Close on click outside
+  setTimeout(()=>{
+    document.addEventListener('mousedown', _operOutside);
+  }, 50);
+}
+
+function _operOutside(e){
+  const picker=document.getElementById('oper-picker');
+  if(picker && !picker.contains(e.target)){
+    closeOperPicker();
+  }
+}
+
+function closeOperPicker(){
+  const p=document.getElementById('oper-picker');
+  if(p) p.remove();
+  document.removeEventListener('mousedown', _operOutside);
+}
+
+function applyMod(idx){
+  const v=vehicles[idx];
+  v._dirty=true;  // marcar: checksum debe recalcularse
+  encVeh(v);
+  modified.add(idx);
+  renderSidebar();
+  renderV(idx);
+  toast(`Parámetro actualizado — checksum recalculado`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════════════
+function renderSidebar(){
+  const q=(document.getElementById('search').value||'').trim().toLowerCase();
+  filtered=q?vehicles.filter(v=>v.name.toLowerCase().includes(q)):[...vehicles];
+  document.getElementById('vlist').innerHTML=filtered.length
+    ?filtered.map(v=>`<div class="vi${v===vehicles[curIdx]?' act':''}${modified.has(v.idx)?' mod':''}" onclick="selV(${v.idx})">
+        <span class="vidx">${v.idx+1}</span>
+        <span class="vn">${v.name}</span>
+      </div>`).join('')
+    :`<div style="padding:16px;text-align:center;font-size:11px;color:var(--td)">Sin resultados</div>`;
+}
+function filterList(){renderSidebar();}
+function selV(idx){curIdx=idx;renderSidebar();renderV(idx);document.querySelector('.vi.act')?.scrollIntoView({block:'nearest'});}
+function nav(d){const n=curIdx+d;if(n>=0&&n<vehicles.length)selV(n);}
+
+// ═══════════════════════════════════════════════════════════
+// HEADER
+// ═══════════════════════════════════════════════════════════
+function updateHeader(file,size,nv,calcCrc,fileCrc){
+  document.getElementById('hf').textContent=file;
+  document.getElementById('hs').textContent=size+' bytes';
+  document.getElementById('hn').textContent=nv;
+  document.getElementById('hv').textContent='v'+metaVer+(metaVerType===0xFF?' (≥)':'');
+  const cf=(fileCrc>>>0).toString(16).toUpperCase().padStart(8,'0');
+  const cc=(calcCrc>>>0).toString(16).toUpperCase().padStart(8,'0');
+  document.getElementById('hcf').textContent=cf;
+  const ce=document.getElementById('hcc');
+  ce.textContent=cc+(cf===cc?' ✓':' ✗'); ce.className='mpv '+(cf===cc?'cok':'cwarn');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FILE LOAD
+// ═══════════════════════════════════════════════════════════
+function triggerLoad(){document.getElementById('fi').click();}
+function handleFile(inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>doLoad(new Uint8Array(e.target.result),f.name,f.size);
+  r.readAsArrayBuffer(f); inp.value='';
+}
+function doLoad(bytes,fname,size){
+  try{
+    const{numVeh,total,calcCrc,fileCrc}=parseBin(bytes);
+    fileName=fname; modified.clear(); editMode=false;
+    document.getElementById('btn-edit').disabled=false;
+    document.getElementById('btn-new').disabled=false;
+    document.getElementById('btn-exp').disabled=false;
+    document.getElementById('btn-pdf').disabled=false;
+    document.getElementById('btn-edit').textContent='✏️ Editar';
+    document.getElementById('ebadge').style.display='none';
+    document.getElementById('btn-del').style.display='none';
+    updateHeader(fname,total,numVeh,calcCrc,fileCrc);
+    curIdx=0; renderSidebar(); selV(0);
+    toast(`✓ ${numVeh} vehículos cargados`);
+  }catch(e){toast('⚠ Error al parsear: '+e.message);}
+}
+
+// ═══════════════════════════════════════════════════════════
+// EDIT MODE
+// ═══════════════════════════════════════════════════════════
+function toggleEdit(){
+  editMode=!editMode;
+  document.getElementById('btn-edit').textContent=editMode?'🔒 Vista':'✏️ Editar';
+  document.getElementById('ebadge').style.display=editMode?'':'none';
+  document.getElementById('btn-del').style.display=editMode?'':'none';
+  renderV(curIdx);
+  toast(editMode?'Modo edición — haz clic en cualquier campo para modificarlo':'Modo vista activado');
+}
+
+// ═══════════════════════════════════════════════════════════
+// DELETE VEHICLE
+// ═══════════════════════════════════════════════════════════
+function deleteVehicle(){
+  if(!confirm(`¿Eliminar el tipo de vehículo "${vehicles[curIdx].name}"? Esta acción no se puede deshacer.`)) return;
+  vehicles.splice(curIdx,1);
+  rebuildBin();
+  if(curIdx>=vehicles.length) curIdx=Math.max(0,vehicles.length-1);
+  renderSidebar();
+  if(vehicles.length>0) selV(curIdx);
+  else document.getElementById('mp').innerHTML='<div class="load"><div class="load-icon">📋</div><h2>Sin vehículos</h2><p>Usa "Nueva UT" para añadir tipos de vehículo.</p></div>';
+  toast('Vehículo eliminado');
+}
+
+// ═══════════════════════════════════════════════════════════
+// NEW VEHICLE MODAL
+// ═══════════════════════════════════════════════════════════
+let modalMode='new'; // 'new' or 'edit'
+
+function openNewModal(){
+  modalMode='new';
+  document.getElementById('mod-title').textContent='Nueva Unidad de Tracción';
+  document.getElementById('mod-sub').textContent='Define los parámetros del nuevo tipo de vehículo';
+  document.getElementById('mod-ok').textContent='Añadir';
+  buildModalForm(defaultVeh());
+  document.getElementById('modal').classList.add('open');
+}
+
+function defaultVeh(){
+  return{
+    name:'',fase2:false,bicabina:false,sistAVE:false,conexSerie:false,
+    modoConv:true,modoAVE:false,modoRAM:false,modoBTS:true,
+    umb5:false,umb35:false,umb50:false,umb60:false,umb160:false,umb180:false,
+    salCorriente:false,fondo10V:false,recs5:true,curvasAsfaD:true,
+    curvT120:false,mono2subsist:false,variante2:true,
+    velmax:120,velbas:120,oper:2,pulsos:88,dmin:840,dmax:910,
+    distrec:0,tiemS35:0,distS35:0,velbts:120
+  };
+}
+
+function buildModalForm(v){
+  const osel=Object.entries(OPERS).map(([k,n])=>`<option value="${k}"${parseInt(k)===v.oper?' selected':''}>${k} — ${n}</option>`).join('');
+  document.getElementById('mod-form').innerHTML=`
+  <div class="msub">Identificación</div>
+  <div class="mfl span2">
+    <label>Denominación (6 chars ASCII) *</label>
+    <input id="mf-name" maxlength="6" value="${v.name}" placeholder="Ej: 447AVE" style="text-transform:uppercase">
+  </div>
+  <div class="mfl"><label>Sistema</label>
+    <select id="mf-sist"><option value="0"${!v.sistAVE?' selected':''}>SICVA</option><option value="1"${v.sistAVE?' selected':''}>AVE</option></select></div>
+  <div class="mfl"><label>Tipo Cabina</label>
+    <select id="mf-cab"><option value="0"${!v.bicabina?' selected':''}>Monocabina</option><option value="1"${v.bicabina?' selected':''}>Bicabina (Locomotora)</option></select></div>
+  <div class="mfl"><label>Fase</label>
+    <select id="mf-fase"><option value="0"${!v.fase2?' selected':''}>Fase 1</option><option value="1"${v.fase2?' selected':''}>Fase 2</option></select></div>
+  <div class="mfl"><label>Operador</label>
+    <select id="mf-oper">${osel}</select></div>
+  <div class="mdiv"></div>
+  <div class="msub">Modos de Operación</div>
+  <div class="mfl"><label>Modo Convencional</label>
+    <select id="mf-conv"><option value="0"${!v.modoConv?' selected':''}>No disponible</option><option value="1"${v.modoConv?' selected':''}>Disponible</option></select></div>
+  <div class="mfl"><label>Modo AVE</label>
+    <select id="mf-ave"><option value="0"${!v.modoAVE?' selected':''}>No disponible</option><option value="1"${v.modoAVE?' selected':''}>Disponible</option></select></div>
+  <div class="mfl"><label>Modo RAM</label>
+    <select id="mf-ram"><option value="0"${!v.modoRAM?' selected':''}>No disponible</option><option value="1"${v.modoRAM?' selected':''}>Disponible</option></select></div>
+  <div class="mfl"><label>Modo BTS</label>
+    <select id="mf-bts"><option value="0"${!v.modoBTS?' selected':''}>No disponible</option><option value="1"${v.modoBTS?' selected':''}>Disponible</option></select></div>
+  <div class="mfl"><label>Conex. Serie Registrador</label>
+    <select id="mf-cserie"><option value="0"${!v.conexSerie?' selected':''}>No</option><option value="1"${v.conexSerie?' selected':''}>Sí</option></select></div>
+  <div class="mdiv"></div>
+  <div class="msub">Velocidades (km/h)</div>
+  <div class="mfl"><label>Vel. Máx. General *</label><input id="mf-vmax" type="number" min="1" max="250" value="${v.velmax}"></div>
+  <div class="mfl"><label>Vel. Máx. ASFA-Básico *</label><input id="mf-vbas" type="number" min="1" max="250" value="${v.velbas}"></div>
+  <div class="mfl"><label>Vel. Máx. BTS</label><input id="mf-vbts" type="number" min="0" max="250" value="${v.velbts}"></div>
+  <div class="mdiv"></div>
+  <div class="msub">Umbrales de Velocidad (máx. 3 activos)</div>
+  ${[['mf-u5','5 km/h',v.umb5],['mf-u35','35 km/h',v.umb35],['mf-u50','50 km/h',v.umb50],['mf-u60','60 km/h',v.umb60],['mf-u160','160 km/h',v.umb160],['mf-u180','180 km/h',v.umb180]].map(([id,lbl,val])=>`
+  <div class="mfl"><label>${lbl}</label>
+    <select id="${id}"><option value="0"${!val?' selected':''}>No disponible</option><option value="1"${val?' selected':''}>Disponible</option></select></div>`).join('')}
+  <div class="mdiv"></div>
+  <div class="msub">Tacogenerador y Ruedas</div>
+  <div class="mfl"><label>Pulsos/Vuelta *</label><input id="mf-pu" type="number" min="1" max="255" value="${v.pulsos}"></div>
+  <div class="mfl"><label>Diámetro Mín. (mm) *</label><input id="mf-dmin" type="number" min="1" max="9999" value="${v.dmin}"></div>
+  <div class="mfl"><label>Diámetro Máx. (mm) *</label><input id="mf-dmax" type="number" min="1" max="9999" value="${v.dmax}"></div>
+  <div class="mdiv"></div>
+  <div class="msub">Sonidos S3 (0 = desactivado)</div>
+  <div class="mfl"><label>Dist. S3-4 (decámetros)</label><input id="mf-dr" type="number" min="0" max="255" value="${v.distrec}"></div>
+  <div class="mfl"><label>Tiempo S3-5 (segundos)</label><input id="mf-ts" type="number" min="0" max="255" value="${v.tiemS35}"></div>
+  <div class="mfl"><label>Dist. S3-5 (decámetros)</label><input id="mf-ds" type="number" min="0" max="255" value="${v.distS35}"></div>
+  <div class="mdiv"></div>
+  <div class="msub">Configuración Analógica y Curvas</div>
+  <div class="mfl"><label>Tipo Salida Analógica</label>
+    <select id="mf-sal"><option value="0"${!v.salCorriente?' selected':''}>Tensión (0-5V / 0-10V)</option><option value="1"${v.salCorriente?' selected':''}>Corriente (4-20mA)</option></select></div>
+  <div class="mfl"><label>Fondo Escala Tensión</label>
+    <select id="mf-fdo"><option value="0"${!v.fondo10V?' selected':''}>0-5V</option><option value="1"${v.fondo10V?' selected':''}>0-10V</option></select></div>
+  <div class="mfl"><label>Curvas ASFA-Básico</label>
+    <select id="mf-curv"><option value="0"${!v.curvasAsfaD?' selected':''}>Tablas Estándar</option><option value="1"${v.curvasAsfaD?' selected':''}>Tablas ASFA-Digital</option></select></div>
+  <div class="mfl"><label>Nº Reconoc. L1</label>
+    <select id="mf-recs"><option value="0"${!v.recs5?' selected':''}>1 reconocimiento</option><option value="1"${v.recs5?' selected':''}>5 reconocimientos</option></select></div>
+  <div class="mfl"><label>Curvas T=</label>
+    <select id="mf-curvt"><option value="0"${!v.curvT120?' selected':''}>T=100</option><option value="1"${v.curvT120?' selected':''}>T=120</option></select></div>
+  <div class="mfl"><label>Subsistemas Monocabina</label>
+    <select id="mf-m2s"><option value="0"${!v.mono2subsist?' selected':''}>1 subsistema</option><option value="1"${v.mono2subsist?' selected':''}>2 subsistemas</option></select></div>
+  <div class="mfl"><label>Variante Monocabina</label>
+    <select id="mf-var"><option value="0"${!v.variante2?' selected':''}>Variante 1</option><option value="1"${v.variante2?' selected':''}>Variante 2</option></select></div>
+  `;
+}
+
+function getModalValues(){
+  const g=(id,num=false)=>{const el=document.getElementById(id);if(!el)return num?0:false;return num?parseInt(el.value,10)||0:el.value;};
+  const gb=(id)=>g(id)==='1'||g(id)===1;
+  const name=g('mf-name').toUpperCase().trim();
+  if(!name){toast('⚠ La denominación no puede estar vacía');return null;}
+  const dmin=parseInt(g('mf-dmin'),10), dmax=parseInt(g('mf-dmax'),10);
+  if(dmax<=dmin){toast('⚠ Diámetro máximo debe ser mayor que el mínimo');return null;}
+  const umbCount=['mf-u5','mf-u35','mf-u50','mf-u60','mf-u160','mf-u180'].filter(id=>g(id)==='1').length;
+  if(umbCount>3){toast('⚠ Máximo 3 umbrales de velocidad activos');return null;}
+  return{
+    name, fase2:g('mf-fase')==='1', bicabina:g('mf-cab')==='1', sistAVE:g('mf-sist')==='1',
+    conexSerie:g('mf-cserie')==='1',
+    modoConv:g('mf-conv')==='1', modoAVE:g('mf-ave')==='1', modoRAM:g('mf-ram')==='1', modoBTS:g('mf-bts')==='1',
+    umb5:g('mf-u5')==='1', umb35:g('mf-u35')==='1', umb50:g('mf-u50')==='1',
+    umb60:g('mf-u60')==='1', umb160:g('mf-u160')==='1', umb180:g('mf-u180')==='1',
+    salCorriente:g('mf-sal')==='1', fondo10V:g('mf-fdo')==='1', recs5:g('mf-recs')==='1',
+    curvasAsfaD:g('mf-curv')==='1', curvT120:g('mf-curvt')==='1',
+    mono2subsist:g('mf-m2s')==='1', variante2:g('mf-var')==='1',
+    velmax:parseInt(g('mf-vmax'),10)||120, velbas:parseInt(g('mf-vbas'),10)||120,
+    oper:parseInt(g('mf-oper'),10)||2, pulsos:parseInt(g('mf-pu'),10)||88,
+    dmin, dmax, distrec:parseInt(g('mf-dr'),10)||0,
+    tiemS35:parseInt(g('mf-ts'),10)||0, distS35:parseInt(g('mf-ds'),10)||0,
+    velbts:parseInt(g('mf-vbts'),10)||120
+  };
+}
+
+function modalOk(){
+  const vals=getModalValues(); if(!vals) return;
+  if(modalMode==='new') addVehicle(vals);
+  closeModal();
+}
+
+function addVehicle(vals){
+  // Extend binBuf by 27 bytes
+  const newBuf=new Uint8Array(binBuf.length+REC);
+  const numVeh=vehicles.length;
+  const tOff=numVeh*REC;
+  // Copy existing vehicle data
+  newBuf.set(binBuf.subarray(0,tOff));
+  // Copy trailer
+  newBuf.set(binBuf.subarray(tOff),tOff+REC);
+  binBuf=newBuf;
+  // Create new vehicle
+  const nv=Object.assign({idx:numVeh,offset:tOff,suma:0,chks:0,w1raw:0,w2raw:0,rawChks:null,_dirty:true},vals);
+  vehicles.push(nv);
+  encVeh(nv);
+  modified.add(nv.idx);
+  rebuildBin();
+  renderSidebar();
+  selV(nv.idx);
+  toast(`✓ Vehículo "${vals.name}" añadido`);
+}
+
+function rebuildBin(){
+  // Rebuild contiguous buffer from vehicles array
+  const numVeh=vehicles.length;
+  const newBuf=new Uint8Array(numVeh*REC+TRAIL);
+  for(let i=0;i<numVeh;i++){
+    vehicles[i].idx=i;
+    vehicles[i].offset=i*REC;
+    // Copy 27 bytes from old binBuf if offset matches, else zeros
+  }
+  binBuf=newBuf;
+  for(let i=0;i<numVeh;i++){
+    vehicles[i].offset=i*REC;
+    encVeh(vehicles[i]);
+  }
+  // Trailer
+  const tOff=numVeh*REC;
+  binBuf[tOff]=metaVerType; binBuf[tOff+1]=metaVer;
+  binBuf[tOff+2]=REC; binBuf[tOff+3]=0;
+  const c=crc32(binBuf,tOff+4);
+  binBuf[tOff+4]=c&0xFF; binBuf[tOff+5]=(c>>8)&0xFF; binBuf[tOff+6]=(c>>16)&0xFF; binBuf[tOff+7]=(c>>24)&0xFF;
+  // Update header
+  updateHeader(fileName,binBuf.length,numVeh,c,c);
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+// ═══════════════════════════════════════════════════════════
+// NEW BIN FROM SCRATCH
+// ═══════════════════════════════════════════════════════════
+function openNewBinModal(){
+  document.getElementById('modal-newbin').classList.add('open');
+}
+function closeNewBinModal(){
+  document.getElementById('modal-newbin').classList.remove('open');
+}
+function initNewBin(){
+  const fnameEl=document.getElementById('nb-fname');
+  const verEl=document.getElementById('nb-ver');
+  const verTypeEl=document.getElementById('nb-vertype');
+  const fname=(fnameEl.value.trim()||'BDASFADIV001');
+  const ver=Math.min(255,Math.max(1,parseInt(verEl.value)||4));
+  const verType=parseInt(verTypeEl.value);
+
+  // Build empty BIN: 0 vehicles + trailer (8 bytes)
+  const buf=new Uint8Array(TRAIL);
+  buf[0]=verType&0xFF;  // VERSI low byte (type)
+  buf[1]=ver&0xFF;      // VERSI high byte (version number)
+  buf[2]=REC;           // TAMBDD low byte = 27
+  buf[3]=0;             // TAMBDD high byte
+  const c=crc32(buf,4);
+  buf[4]=c&0xFF; buf[5]=(c>>8)&0xFF; buf[6]=(c>>16)&0xFF; buf[7]=(c>>24)&0xFF;
+
+  closeNewBinModal();
+
+  // Initialize state
+  binBuf=buf;
+  vehicles=[];
+  modified.clear();
+  editMode=false;
+  metaVer=ver;
+  metaVerType=verType;
+  fileName=fname+'.bin';
+
+  // Enable UI
+  document.getElementById('btn-edit').disabled=false;
+  document.getElementById('btn-new').disabled=false;
+  document.getElementById('btn-exp').disabled=false;
+  document.getElementById('btn-pdf').disabled=false;
+  document.getElementById('btn-edit').textContent='✏️ Editar';
+  document.getElementById('ebadge').style.display='none';
+  document.getElementById('btn-del').style.display='none';
+
+  updateHeader(fileName,buf.length,0,c,c);
+  filtered=[];
+  document.getElementById('vlist').innerHTML=`
+    <div style="padding:24px 12px;text-align:center">
+      <div style="font-size:32px;opacity:.2">➕</div>
+      <p style="font-size:11px;color:var(--td);margin-top:8px">BIN vacío — añade vehículos<br>con el botón <strong>➕ Nueva UT</strong></p>
+    </div>`;
+  document.getElementById('mp').innerHTML=`
+    <div class="load">
+      <div class="load-icon">📄</div>
+      <h2>BIN vacío creado</h2>
+      <p>El fichero <strong>${fileName}</strong> está listo.<br>
+         Versión BDD: <strong>v${ver}</strong> — Tipo: <strong>${verType===0xFF?'FFh (Igual o superior)':'00h (Exacta)'}</strong></p>
+      <button class="btn bp" style="background:var(--grn);margin-top:8px" onclick="openNewModal()">➕ Añadir primera Unidad de Tracción</button>
+      <button class="btn bo" onclick="exportBin()" style="margin-top:4px">💾 Grabar BIN (vacío)</button>
+    </div>`;
+  document.getElementById('tveh').textContent='—';
+  document.getElementById('ecnt').textContent='0 / 0';
+  document.getElementById('bp').disabled=true;
+  document.getElementById('bn').disabled=true;
+  toast(`✓ Nuevo BIN creado: ${fileName}`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportBin(){
+  if(!binBuf) return;
+  // Mostrar modal para confirmar/cambiar nombre
+  let fn=fileName||'BDASFADIV.bin';
+  fn=fn.replace(/\.bin$/i,'');
+  document.getElementById('save-fname').value=fn;
+  // Info del BIN
+  const nv=vehicles.length;
+  const modCount=modified.size;
+  const info=document.getElementById('save-info');
+  info.innerHTML=`<strong>${nv}</strong> tipos de vehículo &nbsp;·&nbsp; `+
+    (modCount>0?`<span style="color:var(--amb)"><strong>${modCount}</strong> registros modificados</span>`:`<span style="color:var(--grn)">Sin cambios pendientes</span>`)+
+    `<br><span style="color:var(--td);margin-top:3px;display:block">Tamaño: ${binBuf.length} bytes &nbsp;·&nbsp; Versión BDD: v${metaVer}</span>`;
+  document.getElementById('modal-save').classList.add('open');
+  setTimeout(()=>{
+    const inp=document.getElementById('save-fname');
+    inp.focus(); inp.select();
+  },80);
+}
+
+function closeSaveModal(){
+  document.getElementById('modal-save').classList.remove('open');
+}
+
+function doExportBin(){
+  rebuildBin();
+  let fn=(document.getElementById('save-fname').value.trim()||'BDASFADIV');
+  fn=fn.replace(/\.bin$/i,'');
+  if(!fn) fn='BDASFADIV';
+  fn+='.bin';
+  const blob=new Blob([binBuf],{type:'application/octet-stream'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download=fn; a.click(); URL.revokeObjectURL(url);
+  fileName=fn;
+  document.getElementById('hf').textContent=fn;
+  modified.clear(); renderSidebar();
+  closeSaveModal();
+  toast('✓ '+fn+' grabado correctamente');
+}
+
+// ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// PDF EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportPDF(){
+  if(!vehicles.length){ toast('\u26a0 No hay vehiculos para exportar'); return; }
+  // pt(): transliterate accented/special chars to ASCII for jsPDF Helvetica compatibility
+  function pt(s){
+    if(s==null) return '';
+    return String(s)
+      .replace(/[ÁÀÄÂÃ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I')
+      .replace(/[ÓÒÖÔÕ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/[Ñ]/g,'N')
+      .replace(/[áàäâã]/g,'a').replace(/[éèëê]/g,'e').replace(/[íìïî]/g,'i')
+      .replace(/[óòöôõ]/g,'o').replace(/[úùüû]/g,'u').replace(/[ñ]/g,'n')
+      .replace(/[Ç]/g,'C').replace(/[ç]/g,'c')
+      .replace(/[\u2014\u2013]/g,'-').replace(/[\u00B7\u00B8]/g,'.')
+      .replace(/[\u2500-\u257F]/g,'-').replace(/[^\x00-\x7F]/g,'?');
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const PW=210, PH=297;
+  const ML=16, MR=16, MT=18, MB=16;
+  const CW=PW-ML-MR;
+
+  // ── Colours ──
+  const C_ACCENT=[26,111,196];   // --acc
+  const C_DARK  =[30,41,59];     // --txt
+  const C_MID   =[71,85,105];    // --tm
+  const C_DIM   =[148,163,184];  // --td
+  const C_LINE  =[221,227,236];  // --bd
+  const C_BG    =[247,249,252];  // --s2
+  const C_GREEN =[22,163,74];
+  const C_AMBER =[217,119,6];
+  const C_RED   =[220,38,38];
+
+  function setFill(rgb){ doc.setFillColor(rgb[0],rgb[1],rgb[2]); }
+  function setDraw(rgb){ doc.setDrawColor(rgb[0],rgb[1],rgb[2]); }
+  function setTxt(rgb) { doc.setTextColor(rgb[0],rgb[1],rgb[2]); }
+  function hline(y,lw=0.2,col=C_LINE){ setDraw(col); doc.setLineWidth(lw); doc.line(ML,y,PW-MR,y); }
+  function rect(x,y,w,h,fill,stroke){ if(fill){setFill(fill);doc.rect(x,y,w,h,stroke?'FD':'F');}else{setDraw(stroke);doc.rect(x,y,w,h,'S');} }
+  function pill(x,y,w,h,col,txt,txCol=[255,255,255]){
+    setFill(col); doc.roundedRect(x,y,w,h,1.5,1.5,'F');
+    setTxt(txCol); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+    doc.text(pt(txt),x+w/2,y+h/2+0.6,{align:'center'});
+  }
+
+  // ─────────────────────────────────────────
+  // COVER PAGE
+  // ─────────────────────────────────────────
+  // Blue header band
+  rect(0,0,PW,52,C_ACCENT); 
+  // ASFA badge
+  setFill([255,255,255]); doc.roundedRect(ML,MT,22,8,1.5,1.5,'F');
+  setTxt(C_ACCENT); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text(pt('ASFA'),ML+11,MT+5.6,{align:'center'});
+  // Title
+  setTxt([255,255,255]);
+  doc.setFont('helvetica','bold'); doc.setFontSize(20);
+  doc.text(pt('BDASFADIV'),ML+28,MT+6);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text(pt('Base de Datos ASFA Digital - Informe de Configuracion'),ML+28,MT+12);
+
+  // Subtitle band
+  rect(0,52,PW,10,[14,35,60]);
+  setTxt([180,210,240]); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  const ts=new Date().toLocaleString('es-ES',{dateStyle:'full',timeStyle:'short'});
+  doc.text(pt('Generado: ')+ts, ML, 58.5);
+  doc.text(pt('ET 03.365.008.6  -  ADIF'), PW-MR, 58.5, {align:'right'});
+
+  // File info card
+  let cy=72;
+  rect(ML,cy,CW,52,C_BG); setDraw(C_LINE); doc.setLineWidth(0.3); doc.rect(ML,cy,CW,52,'S');
+  // Card title
+  setTxt(C_DIM); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text(pt('DATOS DEL FICHERO'),ML+6,cy+7);
+  hline(cy+10,0.2,C_LINE);
+
+  const tOff=vehicles.length*27;
+  const crcFileHex=document.getElementById('hcf').textContent.trim();
+  // hcc includes ' ✓' or ' ✗' suffix — strip everything after the hex value
+  const crcCalcHex=document.getElementById('hcc').textContent.replace(/\s.*$/,'').trim();
+  const fileInfo=[
+    ['Fichero',    fileName||'—'],
+    ['Tamano',     binBuf.length+' bytes'],
+    ['Vehiculos',  vehicles.length+' tipos de UT'],
+    ['Version BDD','v'+metaVer+(metaVerType===0xFF?' (igual o superior)':'(exacta)')],
+    ['CRC32 Fichero', crcFileHex],
+    ['CRC32 Calculado', crcCalcHex],
+  ];
+  fileInfo.forEach(([k,v],i)=>{
+    const row=cy+14+i*6.5;
+    const col=i%2===0;
+    setTxt(C_MID); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    doc.text(k+':',ML+6,row);
+    setTxt(C_DARK); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.text(String(v),ML+42,row);
+  });
+
+  // Summary pills
+  cy=130;
+  setTxt(C_DIM); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text(pt('RESUMEN POR SISTEMA'),ML,cy); cy+=5;
+  hline(cy,0.2,C_LINE); cy+=5;
+
+  const ave   =vehicles.filter(v=>v.sistAVE).length;
+  const sicva =vehicles.length-ave;
+  const mono  =vehicles.filter(v=>!v.bicabina).length;
+  const bica  =vehicles.length-mono;
+  const mConv =vehicles.filter(v=>v.modoConv).length;
+  const mAVE  =vehicles.filter(v=>v.modoAVE).length;
+  const mRAM  =vehicles.filter(v=>v.modoRAM).length;
+  const mBTS  =vehicles.filter(v=>v.modoBTS).length;
+
+  const pills=[
+    ['AVE',ave,C_ACCENT],['SICVA',sicva,[133,77,14]],
+    ['Monocabina',mono,C_MID],['Bicabina',bica,[120,53,15]],
+    ['Modo Conv.',mConv,C_GREEN],['Modo AVE',mAVE,C_ACCENT],
+    ['Modo RAM',mRAM,[147,51,234]],['Modo BTS',mBTS,[14,116,144]],
+  ];
+  let px=ML; const pillH=8, pillGap=4;
+  pills.forEach(([lbl,val,col],i)=>{
+    if(i===4){px=ML; cy+=pillH+pillGap+1;}
+    const pw=Math.min(42,(CW-pillGap*3)/4);
+    setFill(col); doc.roundedRect(px,cy,pw,pillH,1.5,1.5,'F');
+    setTxt([255,255,255]); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+    doc.text(String(val),px+pw-5,cy+3.6,{align:'right'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+    doc.text(lbl,px+4,cy+3.6);
+    setTxt([255,255,255,80]); doc.setFont('helvetica','normal'); doc.setFontSize(5.5);
+    doc.text(pt('/ ')+vehicles.length,px+pw-5,cy+6.8,{align:'right'});
+    px+=pw+pillGap;
+  });
+
+  // Vehicle index table
+  cy+=pillH+pillGap+8;
+  setTxt(C_DIM); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text(pt('INDICE DE TIPOS DE VEHICULO'),ML,cy); cy+=5;
+  hline(cy,0.2,C_LINE); cy+=4;
+
+  // Table header
+  const TC=[ML, ML+8, ML+28, ML+42, ML+60, ML+76, ML+92, ML+108, ML+124];
+  setFill(C_ACCENT); doc.rect(ML,cy-3,CW,6,'F');
+  setTxt([255,255,255]); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+  ['#','Denominacion','Sistema','Cabina','Modo Conv.','Modo AVE','Modo RAM','Modo BTS','Operador'].forEach((h,i)=>doc.text(h,TC[i]+1,cy+0.5));
+  cy+=6;
+
+  vehicles.forEach((v,i)=>{
+    if(cy>PH-MB-5){ doc.addPage(); cy=MT; }
+    const bg=i%2===0?[255,255,255]:C_BG;
+    setFill(bg); doc.rect(ML,cy-3,CW,5.5,'F');
+    setTxt(C_DIM); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+    doc.text(String(i+1),TC[0]+1,cy+0.5);
+    setTxt(C_DARK); doc.setFont('helvetica','bold');
+    doc.text(v.name,TC[1]+1,cy+0.5);
+    doc.setFont('helvetica','normal');
+    // Sistema
+    pill(TC[2]+1,cy-2.2,13,4.5,v.sistAVE?C_ACCENT:[133,77,14],v.sistAVE?'AVE':'SICVA');
+    // Cabina
+    setTxt(C_MID); doc.setFont('helvetica','normal'); doc.setFontSize(6);
+    doc.text(pt(v.bicabina?'Bicabina':'Monocabina'),TC[3]+1,cy+0.5);
+    // Modos — filled/empty squares
+    [[TC[4],v.modoConv],[TC[5],v.modoAVE],[TC[6],v.modoRAM],[TC[7],v.modoBTS]].forEach(([x,val])=>{
+      if(val){
+        setFill(C_GREEN); doc.rect(x+1,cy-2,3.5,3.5,'F');
+      } else {
+        setDraw(C_LINE); doc.setLineWidth(0.3); doc.rect(x+1,cy-2,3.5,3.5,'S');
+      }
+    });
+    // Operador
+    const opShort=OPERS[v.oper]||String(v.oper);
+    setTxt(C_MID); doc.setFont('helvetica','normal'); doc.setFontSize(5.5);
+    doc.text(pt(opShort),TC[8]+1,cy+0.5,{maxWidth:PW-MR-TC[8]-2});
+    cy+=5.5;
+  });
+
+  // ─────────────────────────────────────────
+  // ONE PAGE PER VEHICLE
+  // ─────────────────────────────────────────
+
+  vehicles.forEach((v,vi)=>{
+    doc.addPage();
+    // ── Page header ──
+    rect(0,0,PW,14,C_ACCENT);
+    // Badge
+    setFill([255,255,255]); doc.roundedRect(ML,3.5,18,7,1.5,1.5,'F');
+    setTxt(C_ACCENT); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.text(pt('ASFA'),ML+9,8,{align:'center'});
+    // Title
+    setTxt([255,255,255]); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.text(v.name,ML+22,9.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    doc.text(pt('BDASFADIV  -  Tipo de Vehiculo'),ML+22,12.5);
+    // Page number
+    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+    doc.text(`${vi+1} / ${vehicles.length}`, PW-MR, 9.5, {align:'right'});
+
+    cy=20;
+
+    // ── Sistema pills row ──
+    const sysItems=[
+      [v.sistAVE?'AVE':'SICVA',   v.sistAVE?C_ACCENT:[133,77,14]],
+      [v.bicabina?'BICABINA':'MONOCABINA', v.bicabina?[120,53,15]:C_MID],
+      [v.fase2?'FASE 2':'FASE 1', C_MID],
+    ];
+    let spx=ML;
+    sysItems.forEach(([lbl,col])=>{
+      const sw=32;
+      setFill(col); doc.roundedRect(spx,cy,sw,7,1.5,1.5,'F');
+      setTxt([255,255,255]); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+      doc.text(lbl,spx+sw/2,cy+4.8,{align:'center'});
+      spx+=sw+4;
+    });
+    // Operador
+    const opTxt=OPERS[v.oper]?`${v.oper} - ${OPERS[v.oper]}`:String(v.oper);
+    setTxt(C_MID); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    doc.text(pt('Operador:'),PW-MR-60,cy+4.8,{align:'left'});
+    setTxt(C_DARK); doc.setFont('helvetica','bold');
+    doc.text(opTxt,PW-MR-60+22,cy+4.8);
+    cy+=12;
+
+    // ── Section helper ──
+    function section(title){
+      setTxt(C_DIM); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+      doc.text(pt(title),ML,cy);
+      hline(cy+2,0.2,C_LINE); cy+=6;
+    }
+
+    // ── Field table helper: 2-col grid ──
+    function fieldRow(rows){
+      // rows = array of [label, value, color?]
+      const rowH=6, colW=CW/2-2;
+      rows.forEach((row,i)=>{
+        const col=i%2; const r=Math.floor(i/2);
+        const x=ML+col*(colW+4), y=cy+r*rowH;
+        if(col===0){
+          const bg=(r%2===0)?[255,255,255]:C_BG;
+          setFill(bg); doc.rect(ML,y-3.5,CW,rowH,'F');
+        }
+        setTxt(C_MID); doc.setFont('helvetica','normal'); doc.setFontSize(7);
+        doc.text(pt(row[0])+':',x+2,y+0.5);
+        const valCol=row[2]||C_DARK;
+        setTxt(valCol); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+        doc.text(pt(String(row[1])),x+colW-2,y+0.5,{align:'right'});
+      });
+      const nRows=Math.ceil(rows.length/2);
+      cy+=nRows*rowH+3;
+    }
+
+    // ── Velocidades ──
+    section('VELOCIDADES MAXIMAS');
+    const speedRows=[
+      ['Vel. Max. General',v.velmax+' km/h'],
+      ['Vel. Max. ASFA-Basico',v.velbas+' km/h'],
+      ['Vel. Max. BTS',v.velbts+' km/h'],
+    ];
+    speedRows.forEach(([lbl,val],i)=>{
+      const y=cy; const barW=CW-70;
+      setFill(i%2===0?[255,255,255]:C_BG); doc.rect(ML,y-3.5,CW,6,'F');
+      setTxt(C_MID); doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.text(lbl+':',ML+2,y+0.5);
+      // Bar
+      const bx=ML+58, bw=barW, bh=3.5, by=y-1.5;
+      setFill(C_LINE); doc.roundedRect(bx,by,bw,bh,0.8,0.8,'F');
+      const fill=Math.min(1,parseInt(val)/250);
+      setFill(C_ACCENT); doc.roundedRect(bx,by,bw*fill,bh,0.8,0.8,'F');
+      setTxt(C_DARK); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+      doc.text(val,PW-MR-2,y+0.5,{align:'right'});
+      cy+=6;
+    });
+    cy+=3;
+
+    // ── Modos ──
+    section('MODOS DE OPERACION');
+    const modos=[
+      ['Modo Convencional',v.modoConv],['Modo AVE',v.modoAVE],
+      ['Modo RAM',v.modoRAM],['Modo BTS',v.modoBTS],
+      ['Conex. Registrador',v.conexSerie],
+    ];
+    const mColW=(CW-4)/3; let mx=ML;
+    modos.forEach(([lbl,val],i)=>{
+      const col=i%3; const r=Math.floor(i/3);
+      if(col===0) mx=ML;
+      const x=mx, y=cy+r*14;
+      const ledCol=val?C_GREEN:C_LINE;
+      setFill(C_BG); doc.roundedRect(x,y-1,mColW-2,10,1.5,1.5,'F');
+      setFill(ledCol); doc.circle(x+5,y+3.5,2,'F');
+      if(val){setFill([255,255,255]);doc.circle(x+5,y+3.5,0.6,'F');}
+      setTxt(C_MID); doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.text(lbl,x+10,y+1.5);
+      setTxt(val?C_GREEN:C_DIM); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+      doc.text(pt(val?'ACTIVO':'INACTIVO'),x+10,y+6.5);
+      mx+=mColW;
+    });
+    cy+=Math.ceil(modos.length/3)*14+4;
+
+    // ── Umbrales ──
+    section('UMBRALES DE VELOCIDAD');
+    const umbs=[['5 km/h',v.umb5],['35 km/h',v.umb35],['50 km/h',v.umb50],
+                ['60 km/h',v.umb60],['160 km/h',v.umb160],['180 km/h',v.umb180]];
+    const ucW=CW/6;
+    umbs.forEach(([lbl,val],i)=>{
+      const ux=ML+i*ucW;
+      setFill(val?[220,252,231]:C_BG);
+      setDraw(val?C_GREEN:C_LINE); doc.setLineWidth(0.3);
+      doc.roundedRect(ux+0.5,cy-1,ucW-2,10,1.5,1.5,'FD');
+      setFill(val?C_GREEN:C_LINE); doc.circle(ux+ucW/2,cy+2.5,2,'F');
+      if(val){setFill([255,255,255]);doc.circle(ux+ucW/2,cy+2.5,0.7,'F');}
+      setTxt(val?C_GREEN:C_DIM); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+      doc.text(lbl,ux+ucW/2,cy+7.5,{align:'center'});
+    });
+    cy+=14;
+
+    // ── Tacogenerador & Ruedas ──
+    section('TACOGENERADOR Y RUEDAS');
+    fieldRow([
+      ['Pulsos/Vuelta',v.pulsos+' p/v'],
+      ['Diametro Minimo',v.dmin+' mm'],
+      ['',''],
+      ['Diametro Maximo',v.dmax+' mm'],
+    ]);
+
+    // ── Configuración analógica y curvas ──
+    section('CONF. ANALOGICA Y CURVAS');
+    fieldRow([
+      ['Tipo Salida',     v.salCorriente?'Corriente 4-20mA':'Tension 0-'+(v.fondo10V?'10':'5')+'V'],
+      ['Curvas ASFA-Basico', v.curvasAsfaD?'Tablas ASFA-Digital':'Tablas Estandar'],
+      ['Reconoc. L1',    v.recs5?'5 reconocimientos':'1 reconocimiento'],
+      ['Curvas T=',      v.curvT120?'T=120':'T=100'],
+      ['Subsistemas Mono.',v.mono2subsist?'2 subsistemas':'1 subsistema'],
+      ['Variante Mono.', v.variante2?'Variante 2':'Variante 1'],
+    ]);
+
+    // ── Sonidos S3 ──
+    section('RECORDATORIO DE PARADA (S3)');
+    fieldRow([
+      ['Dist. S3-4 (S3-4)', v.distrec>0?v.distrec+' dm ('+v.distrec*10+' m)':'Desactivado'],
+      ['Dist. S3-5',        v.distS35>0?v.distS35+' dm':'Desactivado'],
+      ['',''],
+      ['Tiempo S3-5',       v.tiemS35>0?v.tiemS35+' s':'Desactivado'],
+    ]);
+
+    // ── Integridad ──
+    section('INTEGRIDAD DEL REGISTRO');
+    const csOk=v.suma===v.chks;
+    fieldRow([
+      ['CheckSum Calculado', v.suma, C_DARK],
+      ['CheckSum Fichero',   v.chks, C_DARK],
+      ['Estado', csOk?'CORRECTO':'NO COINCIDE', csOk?C_GREEN:C_RED],
+      ['Word1 (hex)', '0x'+v.w1raw.toString(16).toUpperCase().padStart(4,'0')],
+      ['Word2 (hex)', '0x'+v.w2raw.toString(16).toUpperCase().padStart(4,'0')],
+      ['',''],
+    ]);
+
+  });
+
+  // ── Footers: single pass after all pages are built ──
+  const totalPages=doc.getNumberOfPages();
+  // Build page->vehicleName map (page 1 = cover, pages 2..N = vehicles)
+  const pageNames=['Portada'].concat(vehicles.map(v=>v.name));
+  for(let p=1;p<=totalPages;p++){
+    doc.setPage(p);
+    setTxt(C_DIM); doc.setFont('helvetica','normal'); doc.setFontSize(6);
+    hline(PH-MB+2,0.2,C_LINE);
+    doc.text('BDASFADIV EDITOR  -  ET 03.365.008.6  -  ADIF',ML,PH-MB+5);
+    const pageName=pageNames[p-1]||'';
+    doc.text('Pag. '+p+' / '+totalPages+(pageName?' - '+pageName:''),PW-MR,PH-MB+5,{align:'right'});
+  }
+
+  let fn=(fileName||'BDASFADIV').replace(/\.bin$/i,'');
+  doc.save(fn+'_informe.pdf');
+  toast('PDF generado: '+fn+'_informe.pdf');
+}
+
+// TOAST & MISC
+// ═══════════════════════════════════════════════════════════
+let ttt;
+function toast(m){
+  const t=document.getElementById('toast'); t.textContent=m;
+  t.classList.add('show'); clearTimeout(ttt); ttt=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const dz=document.getElementById('dz');
+  if(dz){
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dg');});
+    dz.addEventListener('dragleave',()=>dz.classList.remove('dg'));
+    dz.addEventListener('drop',e=>{
+      e.preventDefault();dz.classList.remove('dg');
+      const f=e.dataTransfer.files[0];
+      if(f){const r=new FileReader();r.onload=ev=>doLoad(new Uint8Array(ev.target.result),f.name,f.size);r.readAsArrayBuffer(f);}
+    });
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+    if(e.key==='ArrowLeft') nav(-1);
+    if(e.key==='ArrowRight') nav(1);
+    if(e.key==='Escape'){ closeModal(); closeNewBinModal(); closeSaveModal(); closeOperPicker(); }
+  });
+  document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+  document.getElementById('modal-newbin').addEventListener('click',e=>{if(e.target===document.getElementById('modal-newbin'))closeNewBinModal();});
+  document.getElementById('modal-save').addEventListener('click',e=>{if(e.target===document.getElementById('modal-save'))closeSaveModal();});
+  document.getElementById('save-fname').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doExportBin();}});
+});
+</script>
+</body>
+</html>
