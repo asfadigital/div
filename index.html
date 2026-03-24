@@ -65,6 +65,9 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
 .nbtn:hover:not(:disabled){border-color:var(--acc);color:var(--acc)} .nbtn:disabled{opacity:.3;cursor:not-allowed}
 .ecnt{font-size:11px;color:var(--td);white-space:nowrap}
 .ebadge{background:var(--ambl);color:var(--amb);border:1px solid var(--amb);border-radius:5px;padding:2px 9px;font-size:10px;font-weight:700}
+.btn-confirm{background:var(--grn);color:#fff;} .btn-confirm:hover{background:#15803d}
+.btn-reject{background:var(--red);color:#fff;}  .btn-reject:hover{background:#b91c1c}
+.btn-reset{background:#6366f1;color:#fff;}      .btn-reset:hover{background:#4f46e5}
 
 /* MAIN */
 .main{overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
@@ -107,6 +110,8 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
 /* UMBRALES PILLS */
 .upills{display:flex;gap:6px;padding:12px 14px;flex-wrap:wrap}
 .upill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1.5px solid;font-size:11px;font-weight:700;cursor:default;transition:all .15s}
+.em .upill.ef{cursor:pointer;}
+.em .upill.ef:hover{filter:brightness(.92);outline:2px dashed var(--amb);outline-offset:1px}
 .upill.on{background:var(--grnl);border-color:var(--grn);color:var(--grn)}
 .upill.off{background:#f1f5f9;border-color:var(--bd);color:var(--td)}
 .upill .uled{width:8px;height:8px;border-radius:50%}
@@ -176,10 +181,27 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
 .oper-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--td);
   min-width:22px;text-align:right}
 
+.cmp-section{margin-bottom:12px}
+.cmp-veh-header{background:var(--acc);color:#fff;padding:7px 14px;font-weight:700;font-size:13px;border-radius:5px 5px 0 0;display:flex;align-items:center;gap:8px}
+.cmp-veh-header .csys{font-size:10px;padding:1px 7px;border-radius:3px;background:rgba(255,255,255,.2);font-weight:600}
+.cmp-rows{border:1px solid var(--bd);border-top:none;border-radius:0 0 5px 5px;overflow:hidden}
+.cmp-row{display:grid;grid-template-columns:35% 1fr 1fr;gap:0;border-bottom:1px solid var(--bd)}
+.cmp-row:last-child{border-bottom:none}
+.cmp-row:hover{background:var(--s2)}
+.cmp-field{padding:6px 12px;font-size:11px;font-weight:600;color:var(--tm);display:flex;align-items:center;border-right:1px solid var(--bd)}
+.cmp-old{padding:6px 12px;font-size:11px;color:var(--red);font-family:"JetBrains Mono",monospace;display:flex;align-items:center;border-right:1px solid var(--bd);background:var(--redl)}
+.cmp-new{padding:6px 12px;font-size:11px;color:var(--grn);font-family:"JetBrains Mono",monospace;display:flex;align-items:center;background:var(--grnl)}
+.cmp-col-header{display:grid;grid-template-columns:35% 1fr 1fr;background:var(--s2);border:1px solid var(--bd);border-radius:5px;margin-bottom:4px}
+.cmp-col-header span{padding:5px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--td)}
+.cmp-identical{padding:14px;text-align:center;color:var(--grn);font-weight:600;font-size:12px;border:1px solid var(--bd);border-radius:5px;background:var(--grnl)}
+.cmp-only-bin{background:var(--ambl);border:1px solid var(--amb);border-radius:5px;padding:8px 12px;font-size:11px;color:var(--amb);margin-bottom:6px}
+.cmp-only-editor{background:var(--accl);border:1px solid var(--acc);border-radius:5px;padding:8px 12px;font-size:11px;color:var(--acc);margin-bottom:6px}
+
 /* WARN */
 .warn-row{background:var(--ambl);border-left:3px solid var(--amb);padding:8px 14px;font-size:11px;color:var(--amb);font-weight:500}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -198,6 +220,7 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
     <div class="mp"><span class="mpl">CRC32 Calc.</span><span class="mpv" id="hcc">—</span></div>
   </div>
   <div class="hact">
+    <button class="btn bo" onclick="triggerPdfImport()">📑 Importar PDF RENFE</button>
     <button class="btn bo" onclick="triggerLoad()">📂 Abrir BIN</button>
     <button class="btn bp" onclick="openNewBinModal()">🆕 Nuevo BIN</button>
     <button class="btn bo" id="btn-edit" onclick="toggleEdit()" disabled>✏️ Editar</button>
@@ -229,6 +252,9 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
     <span class="ecnt" id="ecnt">— / —</span>
     <button class="nbtn" id="bn" onclick="nav(1)" disabled>▶</button>
     <span class="ebadge" id="ebadge" style="display:none">EDITANDO</span>
+    <button class="btn btn-confirm" id="btn-confirm" onclick="confirmChanges()" style="display:none;padding:4px 11px;font-size:11px" disabled title="Confirmar cambios de esta UT">✓ Confirmar</button>
+    <button class="btn btn-reject"  id="btn-reject"  onclick="rejectChanges()"  style="display:none;padding:4px 11px;font-size:11px" disabled title="Rechazar cambios de esta UT">✗ Rechazar</button>
+    <button class="btn btn-reset"   id="btn-reset"   onclick="resetVehicle()"   style="display:none;padding:4px 11px;font-size:11px;opacity:.35" disabled title="Disponible tras confirmar cambios en alguna UT">↺ Restablecer</button>
     <button class="btn br" id="btn-del" onclick="deleteVehicle()" style="display:none;padding:4px 10px;font-size:11px">🗑 Eliminar UT</button>
   </div>
 
@@ -253,6 +279,7 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
 
 <!-- FILE INPUT -->
 <input type="file" id="fi" accept=".bin,.BIN" style="display:none" onchange="handleFile(this)">
+<input type="file" id="fi-compare" accept=".bin,.BIN" style="display:none" onchange="handleCompareFile(this)">
 
 <!-- NEW / EDIT MODAL -->
 <div class="ov" id="modal">
@@ -317,6 +344,97 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
     <div class="mact">
       <button class="btn bo" onclick="closeSaveModal()">Cancelar</button>
       <button class="btn bg" onclick="doExportBin()">💾 Descargar</button>
+    </div>
+  </div>
+</div>
+<!-- PDF IMPORT MODAL -->
+<input type="file" id="fi-pdf" accept=".pdf,.PDF" style="display:none" onchange="handlePdfImport(this)">
+<input type="file" id="fi-pdf-compare" accept=".pdf,.PDF" style="display:none" onchange="handlePdfCompare(this)">
+
+<div class="ov" id="modal-pdf">
+  <div class="modal" style="max-width:560px">
+    <h3>Importar desde PDF</h3>
+    <p class="sub" id="pdf-sub">Analizando el fichero PDF…</p>
+
+    <!-- Step 1: progress -->
+    <div id="pdf-step1">
+      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:14px 16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:600;color:var(--tm)" id="pdf-prog-lbl">Leyendo páginas…</span>
+          <span style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--acc)" id="pdf-prog-pct">0%</span>
+        </div>
+        <div style="background:var(--bd);border-radius:4px;height:6px;overflow:hidden">
+          <div id="pdf-prog-bar" style="height:100%;background:var(--acc);border-radius:4px;width:0%;transition:width .2s"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: results -->
+    <div id="pdf-step2" style="display:none">
+      <div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;max-height:260px;overflow-y:auto" id="pdf-result-list"></div>
+      <div style="margin-top:10px;background:var(--accl);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;font-size:11px;color:var(--tm)" id="pdf-summary"></div>
+    </div>
+
+    <div class="mact" id="pdf-actions">
+      <button class="btn bo" onclick="closePdfModal()">Cancelar</button>
+      <button class="btn bg" id="pdf-btn-ok" onclick="applyPdfImport()" style="display:none">✓ Cargar datos en el editor</button>
+    </div>
+  </div>
+</div>
+
+<!-- OPEN/COMPARE CHOICE MODAL -->
+<div class="ov" id="modal-open-choice">
+  <div class="modal" style="max-width:420px">
+    <h3>Abrir fichero BIN</h3>
+    <p class="sub">Ya hay datos cargados en el editor. ¿Qué deseas hacer?</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+      <button class="btn bp" onclick="doTriggerLoad()" style="padding:14px 16px;text-align:left;line-height:1.5;white-space:normal;height:auto">
+        <div style="font-size:13px;font-weight:700">📂 Cargar nuevo BIN en el editor</div>
+        <div style="font-size:11px;font-weight:400;opacity:.85;margin-top:3px">Reemplaza los datos actuales del editor con los del fichero BIN</div>
+      </button>
+      <button class="btn" onclick="doTriggerCompare()" style="padding:14px 16px;text-align:left;line-height:1.5;white-space:normal;height:auto;background:var(--s);border:1px solid var(--bd2);color:var(--txt)">
+        <div style="font-size:13px;font-weight:700">🔍 Comparar BIN con datos del editor</div>
+        <div style="font-size:11px;font-weight:400;color:var(--td);margin-top:3px">Genera un informe de diferencias entre el BIN y el editor</div>
+      </button>
+    </div>
+    <div class="mact">
+      <button class="btn bo" onclick="document.getElementById('modal-open-choice').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARISON REPORT MODAL -->
+<div class="ov" id="modal-compare">
+  <div class="modal" style="max-width:700px;width:95vw">
+    <h3>Informe de Diferencias</h3>
+    <p class="sub" id="cmp-sub">Comparación entre el fichero BIN y los datos del editor</p>
+    <div id="cmp-body" style="max-height:55vh;overflow-y:auto;margin:0 -4px">
+      <!-- filled by JS -->
+    </div>
+    <div class="mact">
+      <button class="btn bo" onclick="document.getElementById('modal-compare').classList.remove('open')">Cerrar</button>
+      <button class="btn bp" id="btn-cmp-pdf" onclick="exportComparePDF()">📄 Exportar PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF IMPORT CHOICE MODAL -->
+<div class="ov" id="modal-pdf-choice">
+  <div class="modal" style="max-width:440px">
+    <h3>Importar PDF RENFE</h3>
+    <p class="sub">Ya hay datos cargados en el editor. ¿Qué deseas hacer?</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+      <button class="btn bp" onclick="doPdfLoad()" style="padding:14px 16px;text-align:left;line-height:1.5;white-space:normal;height:auto">
+        <div style="font-size:13px;font-weight:700">📑 Cargar datos del PDF en el editor</div>
+        <div style="font-size:11px;font-weight:400;opacity:.85;margin-top:3px">Reemplaza los datos actuales del editor con los del PDF</div>
+      </button>
+      <button class="btn" onclick="doPdfCompare()" style="padding:14px 16px;text-align:left;line-height:1.5;white-space:normal;height:auto;background:var(--s);border:1px solid var(--bd2);color:var(--txt)">
+        <div style="font-size:13px;font-weight:700">🔍 Comparar PDF con datos del editor</div>
+        <div style="font-size:11px;font-weight:400;color:var(--td);margin-top:3px">Genera un informe de diferencias entre el PDF y el editor</div>
+      </button>
+    </div>
+    <div class="mact">
+      <button class="btn bo" onclick="document.getElementById('modal-pdf-choice').classList.remove('open')">Cancelar</button>
     </div>
   </div>
 </div>
@@ -403,6 +521,11 @@ function crc32(buf,len){
 const REC=27, TRAIL=8;
 
 let binBuf=null, vehicles=[], curIdx=0, filtered=[], editMode=false, modified=new Set();
+let vehicleSnapshots=[];   // snapshots at start of current edit session (for Rechazar)
+let originalSnapshots=[];  // snapshots at load time (for Restablecer, never overwritten)
+let pendingChanges=false;  // unsaved changes on current vehicle
+let confirmedVehicles=new Set();        // vehicles with confirmed changes (current edit session)
+let sessionConfirmedVehicles=new Set(); // persists across edit mode toggles
 let metaVer=4, metaVerType=0xFF, fileName='';
 
 // Decode one vehicle from binBuf at offset o
@@ -582,7 +705,7 @@ function renderV(idx){
     <div class="ch"><div class="cdot"></div><span class="ct">Umbrales de Velocidad</span><span class="cinfo">Word1 bits 6-11 · máx. 3 activos</span></div>
     <div class="upills">
       ${[['umb5','5 km/h','bit6'],['umb35','35 km/h','bit7'],['umb50','50 km/h','bit8'],['umb60','60 km/h','bit9'],['umb160','160 km/h','bit10'],['umb180','180 km/h','bit11']].map(([k,l,b])=>`
-        <div class="upill ${v[k]?'on':'off'}${em?' ef':''}${em?` data-f="${k}" data-t="tog"`:''}">
+        <div class="upill ${v[k]?'on':'off'}${em?' ef':''}" ${em?`data-f="${k}" data-t="tog"`:''}>
           <div class="uled"></div>${l}<small style="font-size:9px;opacity:.6;margin-left:2px">${b}</small>
         </div>`).join('')}
     </div>
@@ -646,7 +769,9 @@ function attachEd(idx){
 }
 
 function editClick(el,idx){
-  const f=el.dataset.f, t=el.dataset.t, v=vehicles[idx];
+  // clicks may land on child elements (uled, small) — walk up to the data-f element
+  const target = el.closest ? (el.closest('[data-f]') || el) : el;
+  const f=target.dataset.f, t=target.dataset.t, v=vehicles[idx];
   if(!f||!v) return;
 
   if(t==='num'){
@@ -789,9 +914,81 @@ function applyMod(idx){
   v._dirty=true;  // marcar: checksum debe recalcularse
   encVeh(v);
   modified.add(idx);
+  if(idx===curIdx) setConfirmState(true);
   renderSidebar();
   renderV(idx);
-  toast(`Parámetro actualizado — checksum recalculado`);
+  toast(`Parámetro actualizado`);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// CONFIRM / REJECT / RESET
+// ═══════════════════════════════════════════════════════════
+function setConfirmState(dirty){
+  pendingChanges = dirty;
+  const c=document.getElementById('btn-confirm');
+  const r=document.getElementById('btn-reject');
+  if(c){ c.disabled = !dirty; c.style.opacity = dirty?'1':'0.35'; }
+  if(r){ r.disabled = !dirty; r.style.opacity = dirty?'1':'0.35'; }
+}
+
+function confirmChanges(){
+  // Changes are already applied to binBuf via encVeh — just clear pending state
+  vehicleSnapshots[curIdx] = JSON.stringify(vehicles[curIdx]);
+  confirmedVehicles.add(curIdx);
+  sessionConfirmedVehicles.add(curIdx); // persists across edit sessions
+  setConfirmState(false);
+  // Enable Restablecer now that at least one change has been confirmed
+  const rst=document.getElementById('btn-reset');
+  if(rst){ rst.disabled=false; rst.style.opacity='1'; rst.title='Restablecer valores originales cargados'; }
+  toast('✓ Cambios confirmados');
+}
+
+function rejectChanges(){
+  if(!vehicleSnapshots[curIdx]) return;
+  // Restore vehicle from snapshot
+  const snap = JSON.parse(vehicleSnapshots[curIdx]);
+  Object.assign(vehicles[curIdx], snap);
+  vehicles[curIdx]._dirty = snap._dirty;
+  vehicles[curIdx].rawChks = snap.rawChks;
+  encVeh(vehicles[curIdx]);
+  modified.delete(curIdx);
+  setConfirmState(false);
+  renderSidebar();
+  renderV(curIdx);
+  toast('Cambios rechazados — valores restaurados');
+}
+
+function resetVehicle(){
+  if(!sessionConfirmedVehicles.has(curIdx)){
+    toast('Solo se pueden restablecer vehículos con cambios confirmados en sesiones anteriores');
+    return;
+  }
+  if(!originalSnapshots[curIdx]){
+    toast('No hay valores originales guardados para este vehículo');
+    return;
+  }
+  if(!confirm('¿Restablecer los valores originales cargados para "' + vehicles[curIdx].name + '"?')) return;
+  // Restore from ORIGINAL snapshot (state at load time)
+  const snap = JSON.parse(originalSnapshots[curIdx]);
+  Object.assign(vehicles[curIdx], snap);
+  vehicles[curIdx]._dirty = snap._dirty;
+  vehicles[curIdx].rawChks = snap.rawChks;
+  encVeh(vehicles[curIdx]);
+  modified.delete(curIdx);
+  // Also update session snapshot so Rechazar works correctly after reset
+  vehicleSnapshots[curIdx] = originalSnapshots[curIdx];
+  sessionConfirmedVehicles.delete(curIdx);
+  confirmedVehicles.delete(curIdx);
+  // Disable Restablecer again if no more confirmed vehicles
+  if(sessionConfirmedVehicles.size===0){
+    const rst=document.getElementById('btn-reset');
+    if(rst){ rst.disabled=true; rst.style.opacity='0.35'; }
+  }
+  setConfirmState(false);
+  renderSidebar();
+  renderV(curIdx);
+  toast('↺ Valores originales restaurados para ' + vehicles[curIdx].name);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -808,7 +1005,7 @@ function renderSidebar(){
     :`<div style="padding:16px;text-align:center;font-size:11px;color:var(--td)">Sin resultados</div>`;
 }
 function filterList(){renderSidebar();}
-function selV(idx){curIdx=idx;renderSidebar();renderV(idx);document.querySelector('.vi.act')?.scrollIntoView({block:'nearest'});}
+function selV(idx){curIdx=idx;if(editMode) setConfirmState(false);renderSidebar();renderV(idx);document.querySelector('.vi.act')?.scrollIntoView({block:'nearest'});}
 function nav(d){const n=curIdx+d;if(n>=0&&n<vehicles.length)selV(n);}
 
 // ═══════════════════════════════════════════════════════════
@@ -829,7 +1026,22 @@ function updateHeader(file,size,nv,calcCrc,fileCrc){
 // ═══════════════════════════════════════════════════════════
 // FILE LOAD
 // ═══════════════════════════════════════════════════════════
-function triggerLoad(){document.getElementById('fi').click();}
+function triggerLoad(){
+  if(vehicles.length > 0){
+    // Data already loaded — offer choice
+    document.getElementById('modal-open-choice').classList.add('open');
+  } else {
+    document.getElementById('fi').click();
+  }
+}
+function doTriggerLoad(){ // used by choice modal to force load
+  document.getElementById('modal-open-choice').classList.remove('open');
+  document.getElementById('fi').click();
+}
+function doTriggerCompare(){
+  document.getElementById('modal-open-choice').classList.remove('open');
+  document.getElementById('fi-compare').click();
+}
 function handleFile(inp){
   const f=inp.files[0]; if(!f) return;
   const r=new FileReader();
@@ -847,6 +1059,11 @@ function doLoad(bytes,fname,size){
     document.getElementById('btn-edit').textContent='✏️ Editar';
     document.getElementById('ebadge').style.display='none';
     document.getElementById('btn-del').style.display='none';
+    document.getElementById('btn-confirm').style.display='none';
+    document.getElementById('btn-reject').style.display='none';
+    document.getElementById('btn-reset').style.display='none';
+    sessionConfirmedVehicles=new Set(); confirmedVehicles=new Set();
+    originalSnapshots=[]; vehicleSnapshots=[];
     updateHeader(fname,total,numVeh,calcCrc,fileCrc);
     curIdx=0; renderSidebar(); selV(0);
     toast(`✓ ${numVeh} vehículos cargados`);
@@ -857,12 +1074,51 @@ function doLoad(bytes,fname,size){
 // EDIT MODE
 // ═══════════════════════════════════════════════════════════
 function toggleEdit(){
-  editMode=!editMode;
-  document.getElementById('btn-edit').textContent=editMode?'🔒 Vista':'✏️ Editar';
-  document.getElementById('ebadge').style.display=editMode?'':'none';
-  document.getElementById('btn-del').style.display=editMode?'':'none';
+  // ── Exiting edit mode ──────────────────────────────────────
+  if(editMode){
+    // Check for unconfirmed changes on current vehicle
+    if(pendingChanges){
+      if(!confirm('Hay cambios sin confirmar en "'+vehicles[curIdx].name+'".\n¿ Salir de la edicion y perder esos cambios?')){
+        return; // stay in edit mode
+      }
+      // Discard pending changes
+      rejectChanges();
+    }
+    editMode=false;
+    document.getElementById('btn-edit').textContent='✏️ Editar';
+    document.getElementById('ebadge').style.display='none';
+    document.getElementById('btn-del').style.display='none';
+    document.getElementById('btn-confirm').style.display='none';
+    document.getElementById('btn-reject').style.display='none';
+    document.getElementById('btn-reset').style.display='none';
+    renderV(curIdx);
+    toast('Modo vista activado');
+    return;
+  }
+  // ── Entering edit mode ─────────────────────────────────────
+  editMode=true;
+  document.getElementById('btn-edit').textContent='🔒 Vista';
+  document.getElementById('ebadge').style.display='';
+  document.getElementById('btn-del').style.display='';
+  document.getElementById('btn-confirm').style.display='';
+  document.getElementById('btn-reject').style.display='';
+  document.getElementById('btn-reset').style.display='';
+  // Session snapshots for Rechazar (always refresh on entry)
+  vehicleSnapshots = vehicles.map(v=>JSON.stringify(v));
+  // Original snapshots for Restablecer (only set once per load)
+  if(!originalSnapshots.length) originalSnapshots = vehicles.map(v=>JSON.stringify(v));
+  confirmedVehicles = new Set();
+  setConfirmState(false);
+  // Re-enable Restablecer if there were confirmed changes in a previous session
+  const rst=document.getElementById('btn-reset');
+  if(rst){
+    const hasHistory = sessionConfirmedVehicles.size > 0;
+    rst.disabled = !hasHistory;
+    rst.style.opacity = hasHistory ? '1' : '0.35';
+    rst.title = hasHistory ? 'Restablecer valores originales cargados' : 'Disponible tras confirmar cambios en alguna UT';
+  }
   renderV(curIdx);
-  toast(editMode?'Modo edición — haz clic en cualquier campo para modificarlo':'Modo vista activado');
+  toast('Modo edición — haz clic en cualquier campo para modificarlo');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1096,6 +1352,9 @@ function initNewBin(){
   document.getElementById('btn-edit').textContent='✏️ Editar';
   document.getElementById('ebadge').style.display='none';
   document.getElementById('btn-del').style.display='none';
+  document.getElementById('btn-confirm').style.display='none';
+  document.getElementById('btn-reject').style.display='none';
+  document.getElementById('btn-reset').style.display='none';
 
   updateHeader(fileName,buf.length,0,c,c);
   filtered=[];
@@ -1536,6 +1795,686 @@ function exportPDF(){
   toast('PDF generado: '+fn+'_informe.pdf');
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// PDF IMPORT (PDF.js)
+// ═══════════════════════════════════════════════════════════
+let pdfParsedVehicles = [];
+
+function triggerPdfImport(){
+  if(vehicles.length > 0){
+    document.getElementById('modal-pdf-choice').classList.add('open');
+  } else {
+    document.getElementById('fi-pdf').click();
+  }
+}
+function doPdfLoad(){
+  document.getElementById('modal-pdf-choice').classList.remove('open');
+  document.getElementById('fi-pdf').click();
+}
+function doPdfCompare(){
+  document.getElementById('modal-pdf-choice').classList.remove('open');
+  document.getElementById('fi-pdf-compare').click();
+}
+
+function handlePdfImport(inp){
+  const file = inp.files[0]; if(!file) return;
+  inp.value = '';
+  // Open modal in progress state
+  document.getElementById('pdf-step1').style.display = '';
+  document.getElementById('pdf-step2').style.display = 'none';
+  document.getElementById('pdf-btn-ok').style.display = 'none';
+  document.getElementById('pdf-sub').textContent = 'Leyendo el PDF…';
+  document.getElementById('pdf-prog-bar').style.width = '0%';
+  document.getElementById('pdf-prog-pct').textContent = '0%';
+  document.getElementById('pdf-prog-lbl').textContent = 'Leyendo páginas…';
+  document.getElementById('modal-pdf').classList.add('open');
+  pdfParsedVehicles = [];
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      await parsePdf(new Uint8Array(e.target.result));
+    } catch(err) {
+      document.getElementById('pdf-sub').textContent = 'Error: ' + err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// PDF comparison mode — parse PDF then compare against editor
+let pdfCompareMode = false;
+
+function handlePdfCompare(inp){
+  const file = inp.files[0]; if(!file) return;
+  inp.value = '';
+  pdfCompareMode = true;
+  // Reuse the existing PDF import modal for progress display
+  document.getElementById('pdf-step1').style.display = '';
+  document.getElementById('pdf-step2').style.display = 'none';
+  document.getElementById('pdf-btn-ok').style.display = 'none';
+  document.getElementById('pdf-sub').textContent = 'Leyendo el PDF para comparación…';
+  document.getElementById('pdf-prog-bar').style.width = '0%';
+  document.getElementById('pdf-prog-pct').textContent = '0%';
+  document.getElementById('pdf-prog-lbl').textContent = 'Leyendo páginas…';
+  document.getElementById('modal-pdf').classList.add('open');
+  pdfParsedVehicles = [];
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try { await parsePdf(new Uint8Array(e.target.result), file.name); }
+    catch(err) { document.getElementById('pdf-sub').textContent = 'Error: ' + err.message; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+
+async function parsePdf(data, fname){
+  // Configure PDF.js worker
+  if(typeof pdfjsLib === 'undefined'){
+    toast('⚠ PDF.js no disponible. Verifica la conexión a internet.');
+    closePdfModal(); return;
+  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  const nPages = pdf.numPages;
+  // Helper: update progress bar (0-100)
+  function prog(pct, label){
+    document.getElementById('pdf-prog-bar').style.width = pct + '%';
+    document.getElementById('pdf-prog-pct').textContent = pct + '%';
+    document.getElementById('pdf-prog-lbl').textContent = label;
+  }
+
+  // ── Phase 1: read all pages (0→50%) ──────────────────────
+  const allText = [];
+  for(let p = 1; p <= nPages; p++){
+    const pct = Math.round((p / nPages) * 50);
+    prog(pct, `Leyendo pág. ${p}/${nPages} — buscando vehículos…`);
+    const page = await pdf.getPage(p);
+    const tc   = await page.getTextContent();
+    // Reconstruct lines by grouping items with similar Y transform
+    // (PDF.js returns each word/span as a separate item)
+    const lineMap = new Map();
+    for(const item of tc.items){
+      if(!item.str.trim()) continue;
+      const y = Math.round(item.transform[5] / 4) * 4; // group within 4pt
+      if(!lineMap.has(y)) lineMap.set(y, []);
+      lineMap.get(y).push(item.str);
+    }
+    // Sort by Y descending (PDF Y origin is bottom-left)
+    const sortedY = [...lineMap.keys()].sort((a,b) => b - a);
+    const pageLines = sortedY.map(y => lineMap.get(y).join(' '));
+    allText.push(pageLines.join('\n'));
+    // yield to browser so bar repaints
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  // ── Phase 2: detect blocks and parse vehicles (50→100%) ──
+  prog(50, 'Identificando vehículos…');
+  await new Promise(r => setTimeout(r, 0));
+
+  pdfParsedVehicles = [];
+  const fullText = allText.join('\n');
+  const blocks   = fullText.split(/SIGNIFICADO\s+/);
+  const nBlocks  = blocks.length - 1;   // block[0] is header text
+
+  for(let b = 1; b < blocks.length; b++){
+    const pct = 50 + Math.round(((b) / nBlocks) * 50);
+    const veh = parsePdfBlock(blocks[b]);
+    if(veh){
+      pdfParsedVehicles.push(veh);
+      prog(pct, `Procesando bloques… ${pdfParsedVehicles.length} UTs válidas (${veh.name})`);
+    } else {
+      prog(pct, `Procesando bloques… ${pdfParsedVehicles.length} UTs válidas`);
+    }
+    // yield every 5 blocks so bar stays live
+    if(b % 5 === 0) await new Promise(r => setTimeout(r, 0));
+  }
+
+  prog(100, `Completado — ${pdfParsedVehicles.length} UTs encontradas`);
+  await new Promise(r => setTimeout(r, 80));
+  if(pdfCompareMode){
+    pdfCompareMode = false;
+    closePdfModal();
+    // Run comparison using parsed PDF vehicles vs editor
+    runCompareParsedVehicles(pdfParsedVehicles, fname || 'PDF RENFE');
+  } else {
+    showPdfResults(pdfParsedVehicles);
+  }
+}
+
+function parsePdfBlock(block){
+  // Lines are now properly reconstructed as "Key: Value"
+  const lines = block.split('\n').map(l => l.trim()).filter(l => l);
+  if(!lines.length) return null;
+  const name = lines[0].replace(/\s.*/, '').substring(0, 6);
+  if(!name || !/^[A-Za-z0-9._]/.test(name)) return null;
+  // Must look like a real vehicle block: require at least 'Velocidad' field
+  const blockLower = block.toLowerCase();
+  if(!blockLower.includes('velocidad') && !blockLower.includes('pulsos')) return null;
+
+  // Build a key→value map from "Key: Value" lines
+  // Also handle split values (value on next line when key ends with ":")
+  const kv = {};
+  for(let i = 0; i < lines.length; i++){
+    const colon = lines[i].indexOf(':');
+    if(colon < 0) continue;
+    const key = lines[i].substring(0, colon).trim().toLowerCase();
+    let val   = lines[i].substring(colon + 1).trim();
+    // If value is empty, look at next line
+    if(!val && i + 1 < lines.length && !lines[i+1].includes(':'))
+      val = lines[i+1].trim();
+    // Some values span 2 extra lines (e.g. value on next line after key)
+    if(val && !val.toLowerCase().includes('disponible') && val.split(' ').length <= 3
+       && i + 2 < lines.length && !lines[i+2].includes(':'))
+      val = val + ' ' + lines[i+2].trim();
+    kv[key] = val;
+  }
+
+  function get(keyPart){
+    const kl = keyPart.toLowerCase();
+    for(const k of Object.keys(kv))
+      if(k.includes(kl)) return kv[k];
+    return '';
+  }
+  function isDisp(keyPart){
+    const v = get(keyPart).toLowerCase();
+    return v.includes('disponible') && !v.startsWith('no');
+  }
+  function numVal(keyPart){
+    const v = get(keyPart).replace(/[^0-9]/g,'');
+    return v ? parseInt(v, 10) : 0;
+  }
+
+  // Operator: map "Propietario" text to code
+  const OPER_MAP = {
+    'adif':1,'renfe':2,'comsa':3,'continental':4,'acciona':5,
+    'activa':6,'traccion':7,'tracción':7,'eusko':8,'arcelormittal':9,
+    'ewsi':10,'logitren':11,'fesur':12,'aopja':13,'speno':14,
+    'sncf':15,'ferrovial':16,'fgc':17,'copasa':18,'alpha':19
+  };
+  const propTxt = get('propietario').toLowerCase();
+  let operCode = 2; // default RENFE
+  for(const [k,v] of Object.entries(OPER_MAP))
+    if(propTxt.includes(k)){ operCode = v; break; }
+
+  return {
+    name,
+    fase2:        (get('fase') || '1') === '2',
+    bicabina:     get('tipo de cabina').toLowerCase().includes('bicabina') ||
+                  get('cabina').toLowerCase().includes('bicabina'),
+    sistAVE:      (get('sicva/ave') || get('sicva') || '').toLowerCase().includes('ave'),
+    conexSerie:   isDisp('registrador serie') || isDisp('conexión con registrador'),
+    modoConv:     isDisp('convencional'),
+    modoAVE:      isDisp('modo ave'),
+    modoRAM:      isDisp('modo ram'),
+    modoBTS:      isDisp('modo bts'),
+    umb5:         isDisp('5km') || isDisp('umbral de 5'),
+    umb35:        isDisp('35km') || isDisp('umbral 35'),
+    umb50:        isDisp('50km') || isDisp('umbral 50'),
+    umb60:        isDisp('60km') || isDisp('umbral 60'),
+    umb160:       isDisp('160km') || isDisp('umbral 160'),
+    umb180:       isDisp('180km') || isDisp('umbral 180'),
+    salCorriente: get('salida anal').toLowerCase().includes('corriente'),
+    fondo10V:     (get('fondo de') || get('fondo')).includes('10'),
+    recs5:        (get('reconocimientos') || '').includes('5'),
+    curvasAsfaD:  (() => {
+                    // Check kv value for 'curvas de asfa-b' key
+                    const cv = get('curvas de asfa') || '';
+                    if(cv.toLowerCase().includes('asfa-d')) return true;
+                    // Fallback: scan raw block lines around 'Curvas de ASFA'
+                    const blines = block.split('\n');
+                    for(let bi=0; bi<blines.length; bi++){
+                      if(blines[bi].toLowerCase().includes('curvas de asfa')){
+                        // Check 3 lines before AND 3 lines after (PDF.js may reorder)
+                        const lo=Math.max(0,bi-3), hi=Math.min(bi+3,blines.length-1);
+                        for(let bj=lo; bj<=hi; bj++)
+                          if(blines[bj].toLowerCase().includes('asfa-d')) return true;
+                      }
+                    }
+                    return false;
+                  })(),
+    curvT120:     (() => {
+                    const cv = get('curvas de t=100') || get('t=100') || '';
+                    if(cv.toLowerCase().includes('t=120')) return true;
+                    // PDF.js may place value line BEFORE key line — scan ±3 lines
+                    const blines = block.split('\n');
+                    for(let bi=0; bi<blines.length; bi++){
+                      if(blines[bi].toLowerCase().includes('curvas de t=')){
+                        const lo=Math.max(0,bi-3), hi=Math.min(bi+3,blines.length-1);
+                        for(let bj=lo; bj<=hi; bj++)
+                          if(blines[bj].toLowerCase().includes('t=120')) return true;
+                      }
+                    }
+                    return false;
+                  })(),
+    mono2subsist: (get('subsistemas captacion') || get('subsistemas') || '').includes('2'),
+    variante2:    (get('variante monocabina') || get('variante') || '').includes('2'),
+    velmax:  numVal('velocidad máxima (km') || numVal('velocidad maxima (km'),
+    velbas:  numVal('velocidad máxima basico') || numVal('velocidad maxima basico'),
+    velbts:  numVal('velocidad máxima bts') || numVal('velocidad maxima bts'),
+    oper:    operCode,
+    pulsos:  numVal('pulsos por vuelta'),
+    dmin:    numVal('diámetro de rueda mínimo') || numVal('diametro de rueda minimo'),
+    dmax:    numVal('diámetro de rueda máximo') || numVal('diametro de rueda maximo'),
+    distrec: numVal('distancia aviso s3_4') || numVal('distancia aviso s3-4'),
+    distS35: numVal('distancia aviso s3_5') || numVal('distancia aviso s3-5'),
+    tiemS35: numVal('tiempo aviso s3_5') || numVal('tiempo aviso s3-5'),
+    rawChks: null, _dirty: true
+  };
+}
+
+function showPdfResults(vehs){
+  document.getElementById('pdf-step1').style.display = 'none';
+  document.getElementById('pdf-step2').style.display = '';
+  document.getElementById('pdf-btn-ok').style.display = '';
+
+  const ok = vehs.filter(v => v.velmax > 0);
+  const warn = vehs.filter(v => v.velmax === 0);
+
+  document.getElementById('pdf-sub').textContent =
+    `Parseado completo — ${vehs.length} UTs encontradas`;
+
+  document.getElementById('pdf-summary').innerHTML =
+    `<strong>${ok.length}</strong> vehículos con datos completos` +
+    (warn.length ? ` &nbsp;·&nbsp; <span style="color:var(--amb)"><strong>${warn.length}</strong> con datos incompletos</span>` : '') +
+    `<br><span style="color:var(--td)">Operador asignado: 2 — RENFE (modificable tras importar)</span>`+
+    `<br><br><span style="color:var(--amb);font-weight:700">⚠ Los datos cargados deben ser revisados antes de generar el fichero BIN.</span>`;
+
+  const listEl = document.getElementById('pdf-result-list');
+  listEl.innerHTML = ok.concat(warn).map((v,i) => {
+    const complete = v.velmax > 0;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;${i>0?'border-top:1px solid var(--bd)':''}">
+      <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;min-width:56px">${v.name}</span>
+      <span style="font-size:11px;color:var(--td);flex:1">
+        ${v.sistAVE?'AVE':'SICVA'} · ${v.bicabina?'Bicabina':'Monocabina'} · 
+        Vmax=${v.velmax} km/h · Ø${v.dmin}-${v.dmax}mm · ${v.pulsos}p/v
+      </span>
+      <span style="font-size:10px;padding:1px 6px;border-radius:3px;font-weight:700;${complete?'background:var(--grnl);color:var(--grn)':'background:var(--ambl);color:var(--amb)'}" title="${complete?'Datos completos':'Velocidad maxima = 0, revisar'}">${complete?'OK':'Incompleto'}</span>
+    </div>`;
+  }).join('');
+}
+
+function applyPdfImport(){
+  if(!pdfParsedVehicles.length){ closePdfModal(); return; }
+  closePdfModal();
+
+  // Load parsed vehicles into the editor (no BIN generated yet)
+  const N = pdfParsedVehicles.length;
+  const REC = 27, TRAIL = 8;
+  binBuf = new Uint8Array(N * REC + TRAIL);
+  vehicles = [];
+  modified = new Set();
+  metaVer = 18; metaVerType = 0xFF;
+  fileName = 'BDASFADIV018.bin';
+
+  pdfParsedVehicles.forEach((v, i) => {
+    v.idx = i; v.offset = i * REC;
+    v.w1raw = 0; v.w2raw = 0;
+    v.suma = 0; v.chks = 0;
+    vehicles.push(v);
+    encVeh(v);
+  });
+
+  // Write trailer
+  const tOff = N * REC;
+  binBuf[tOff] = 0xFF; binBuf[tOff+1] = 18;
+  binBuf[tOff+2] = 27; binBuf[tOff+3] = 0;
+  const crc = crc32(binBuf, tOff+4);
+  binBuf[tOff+4]=crc&0xFF; binBuf[tOff+5]=(crc>>8)&0xFF;
+  binBuf[tOff+6]=(crc>>16)&0xFF; binBuf[tOff+7]=(crc>>24)&0xFF;
+
+  // Enable UI
+  document.getElementById('btn-edit').disabled = false;
+  document.getElementById('btn-new').disabled = false;
+  document.getElementById('btn-exp').disabled = false;
+  document.getElementById('btn-pdf').disabled = false;
+  document.getElementById('btn-edit').textContent = '✏️ Editar';
+  document.getElementById('ebadge').style.display = 'none';
+  document.getElementById('btn-del').style.display = 'none';
+
+  const calcCrc = crc32(binBuf, tOff+4);
+  updateHeader(fileName, binBuf.length, N, calcCrc, crc);
+  curIdx = 0;
+  renderSidebar();
+  selV(0);
+  toast(`✓ ${N} vehículos cargados — revisa los datos y usa 💾 Grabar BIN cuando estén verificados`);
+}
+
+function closePdfModal(){
+  document.getElementById('modal-pdf').classList.remove('open');
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// BIN COMPARISON ENGINE
+// ═══════════════════════════════════════════════════════════
+let compareData = { binName:'', diffs:[], onlyBin:[], onlyEditor:[] };
+
+function handleCompareFile(inp){
+  const file = inp.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = e => runCompare(new Uint8Array(e.target.result), file.name);
+  r.readAsArrayBuffer(file);
+  inp.value='';
+}
+
+function runCompareParsedVehicles(pdfVehicles, sourceName){
+  // Build maps
+  const editorMap = {};
+  vehicles.forEach(v => editorMap[v.name.trim()] = v);
+  const pdfMap = {};
+  pdfVehicles.forEach(v => pdfMap[v.name.trim()] = v);
+
+  const FIELDS = [
+    ['Sistema',           v => v.sistAVE ? 'AVE' : 'SICVA'],
+    ['Tipo Cabina',       v => v.bicabina ? 'Bicabina' : 'Monocabina'],
+    ['Fase',              v => v.fase2 ? 'Fase 2' : 'Fase 1'],
+    ['Conex. Registrador',v => v.conexSerie ? 'Si' : 'No'],
+    ['Modo Convencional', v => v.modoConv ? 'Disponible' : 'No disp.'],
+    ['Modo AVE',          v => v.modoAVE  ? 'Disponible' : 'No disp.'],
+    ['Modo RAM',          v => v.modoRAM  ? 'Disponible' : 'No disp.'],
+    ['Modo BTS',          v => v.modoBTS  ? 'Disponible' : 'No disp.'],
+    ['Umbral 5 km/h',     v => v.umb5   ? 'Si' : 'No'],
+    ['Umbral 35 km/h',    v => v.umb35  ? 'Si' : 'No'],
+    ['Umbral 50 km/h',    v => v.umb50  ? 'Si' : 'No'],
+    ['Umbral 60 km/h',    v => v.umb60  ? 'Si' : 'No'],
+    ['Umbral 160 km/h',   v => v.umb160 ? 'Si' : 'No'],
+    ['Umbral 180 km/h',   v => v.umb180 ? 'Si' : 'No'],
+    ['Salida Analogica',  v => v.salCorriente ? 'Corriente' : 'Tension'],
+    ['Fondo Tension',     v => v.fondo10V ? '10V' : '5V'],
+    ['Curvas ASFA-B',     v => v.curvasAsfaD ? 'ASFA-D' : 'Estandar'],
+    ['Reconoc. L1',       v => v.recs5 ? '5' : '1'],
+    ['Curvas T=',         v => v.curvT120 ? 'T=120' : 'T=100'],
+    ['Subsist. Captac.',  v => v.mono2subsist ? '2' : '1'],
+    ['Variante Mono.',    v => v.variante2 ? '2' : '1'],
+    ['Vel. Max. (km/h)',  v => String(v.velmax)],
+    ['Vel. Max. Basico',  v => String(v.velbas)],
+    ['Vel. Max. BTS',     v => String(v.velbts)],
+    ['Operador',          v => String(v.oper)],
+    ['Pulsos/Vuelta',     v => String(v.pulsos)],
+    ['Diam. Min. (mm)',   v => String(v.dmin)],
+    ['Diam. Max. (mm)',   v => String(v.dmax)],
+    ['Dist. S3-4 (dm)',   v => String(v.distrec)],
+    ['Dist. S3-5 (dm)',   v => String(v.distS35)],
+    ['Tiempo S3-5 (s)',   v => String(v.tiemS35)],
+  ];
+
+  const allNames = [...new Set([...Object.keys(editorMap), ...Object.keys(pdfMap)])].sort();
+  const diffs = [], onlySource = [], onlyEditor = [];
+
+  allNames.forEach(name => {
+    const ev = editorMap[name];
+    const pv = pdfMap[name];
+    if(!ev){ onlySource.push(name); return; }
+    if(!pv){ onlyEditor.push(name); return; }
+    const changed = [];
+    FIELDS.forEach(([label, fn]) => {
+      const ev_val = fn(ev), pv_val = fn(pv);
+      if(ev_val !== pv_val) changed.push({ label, editor: ev_val, bin: pv_val });
+    });
+    if(changed.length) diffs.push({ name, changed });
+  });
+
+  compareData = {
+    binName: sourceName, diffs,
+    onlyBin: onlySource, onlyEditor,
+    editorCount: vehicles.length, binCount: pdfVehicles.length
+  };
+  showCompareModal();
+}
+
+
+function runCompare(bytes, fname){
+  // Parse the incoming BIN into a temporary vehicle list
+  const savedBuf = binBuf;
+  const savedVeh = vehicles;
+  binBuf = bytes;
+  const { numVeh } = parseBin(bytes);
+  const binVehicles = vehicles.slice(); // copy
+  // Restore editor state
+  binBuf = savedBuf;
+  vehicles = savedVeh;
+
+  // Field definitions for comparison
+  const FIELDS = [
+    ['Sistema',          v => v.sistAVE ? 'AVE' : 'SICVA'],
+    ['Tipo Cabina',      v => v.bicabina ? 'Bicabina' : 'Monocabina'],
+    ['Fase',             v => v.fase2 ? 'Fase 2' : 'Fase 1'],
+    ['Conex. Registrador', v => v.conexSerie ? 'Si' : 'No'],
+    ['Modo Convencional',  v => v.modoConv ? 'Disponible' : 'No disp.'],
+    ['Modo AVE',           v => v.modoAVE  ? 'Disponible' : 'No disp.'],
+    ['Modo RAM',           v => v.modoRAM  ? 'Disponible' : 'No disp.'],
+    ['Modo BTS',           v => v.modoBTS  ? 'Disponible' : 'No disp.'],
+    ['Umbral 5 km/h',    v => v.umb5   ? 'Si' : 'No'],
+    ['Umbral 35 km/h',   v => v.umb35  ? 'Si' : 'No'],
+    ['Umbral 50 km/h',   v => v.umb50  ? 'Si' : 'No'],
+    ['Umbral 60 km/h',   v => v.umb60  ? 'Si' : 'No'],
+    ['Umbral 160 km/h',  v => v.umb160 ? 'Si' : 'No'],
+    ['Umbral 180 km/h',  v => v.umb180 ? 'Si' : 'No'],
+    ['Salida Analogica', v => v.salCorriente ? 'Corriente' : 'Tension'],
+    ['Fondo Tension',    v => v.fondo10V ? '10V' : '5V'],
+    ['Curvas ASFA-B',    v => v.curvasAsfaD ? 'ASFA-D' : 'Estandar'],
+    ['Reconoc. L1',      v => v.recs5 ? '5' : '1'],
+    ['Curvas T=',        v => v.curvT120 ? 'T=120' : 'T=100'],
+    ['Subsist. Captac.', v => v.mono2subsist ? '2' : '1'],
+    ['Variante Mono.',   v => v.variante2 ? '2' : '1'],
+    ['Vel. Max. (km/h)', v => String(v.velmax)],
+    ['Vel. Max. Basico', v => String(v.velbas)],
+    ['Vel. Max. BTS',    v => String(v.velbts)],
+    ['Operador',         v => String(v.oper)],
+    ['Pulsos/Vuelta',    v => String(v.pulsos)],
+    ['Diam. Min. (mm)',  v => String(v.dmin)],
+    ['Diam. Max. (mm)',  v => String(v.dmax)],
+    ['Dist. S3-4 (dm)',  v => String(v.distrec)],
+    ['Dist. S3-5 (dm)',  v => String(v.distS35)],
+    ['Tiempo S3-5 (s)',  v => String(v.tiemS35)],
+  ];
+
+  // Build maps by name
+  const editorMap = {};
+  vehicles.forEach(v => editorMap[v.name.trim()] = v);
+  const binMap = {};
+  binVehicles.forEach(v => binMap[v.name.trim()] = v);
+
+  const allNames = [...new Set([...Object.keys(editorMap), ...Object.keys(binMap)])].sort();
+  const diffs = [], onlyBin = [], onlyEditor = [];
+
+  allNames.forEach(name => {
+    const ev = editorMap[name];
+    const bv = binMap[name];
+    if(!ev){ onlyBin.push(name); return; }
+    if(!bv){ onlyEditor.push(name); return; }
+    const changed = [];
+    FIELDS.forEach(([label, fn]) => {
+      const ev_val = fn(ev), bv_val = fn(bv);
+      if(ev_val !== bv_val) changed.push({ label, editor: ev_val, bin: bv_val });
+    });
+    if(changed.length) diffs.push({ name, changed });
+  });
+
+  compareData = { binName: fname, diffs, onlyBin, onlyEditor, editorCount: vehicles.length, binCount: numVeh };
+  showCompareModal();
+}
+
+function showCompareModal(){
+  const { binName, diffs, onlyBin, onlyEditor, editorCount, binCount } = compareData;
+  const _eN=(fileName||'Editor').replace(/\.bin$/i,''), _bN=binName.replace(/\.bin$/i,'');
+  document.getElementById('cmp-sub').textContent =
+    `A: ${_eN} (${editorCount} UT)  vs  B: ${_bN} (${binCount} UT) — ${diffs.length} vehículos con diferencias`;
+
+  let html = '';
+
+  if(onlyBin.length){
+    html += `<div class="cmp-only-bin">
+      <div style="font-weight:700;margin-bottom:4px">➕ Nuevas UT en ${binName} no presentes en el Editor (${onlyBin.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${onlyBin.map(n=>`<span style="background:var(--amb);color:#fff;padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px">${n}</span>`).join('')}</div>
+    </div>`;
+  }
+  if(onlyEditor.length){
+    html += `<div class="cmp-only-editor">
+      <div style="font-weight:700;margin-bottom:4px">➖ UT presentes en el Editor pero no en ${binName} (${onlyEditor.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${onlyEditor.map(n=>`<span style="background:var(--acc);color:#fff;padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px">${n}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  if(diffs.length === 0 && onlyBin.length === 0 && onlyEditor.length === 0){
+    html += `<div class="cmp-identical">✓ Los ficheros son idénticos en todos los campos comparados</div>`;
+  } else if(diffs.length > 0){
+    html += `<div class="cmp-col-header">
+      <span>Campo</span><span>A: ${(fileName||'Editor').replace(/\.bin$/i,'')}</span><span>B: ${binName.replace(/\.bin$/i,'')}</span>
+    </div>`;
+    diffs.forEach(({ name, changed }) => {
+      html += `<div class="cmp-section">
+        <div class="cmp-veh-header">
+          <span>${name}</span>
+          <span class="csys">${changed.length} diferencia${changed.length>1?'s':''}</span>
+        </div>
+        <div class="cmp-rows">
+          ${changed.map(c => `<div class="cmp-row">
+            <div class="cmp-field">${c.label}</div>
+            <div class="cmp-new">${c.editor}</div>
+            <div class="cmp-old">${c.bin}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    });
+  }
+
+  document.getElementById('cmp-body').innerHTML = html;
+  document.getElementById('modal-compare').classList.add('open');
+}
+
+function exportComparePDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const { binName, diffs, onlyBin, onlyEditor, editorCount, binCount } = compareData;
+  const PW=210, ML=14, MR=14, MT=18, MB=14, CW=PW-ML-MR;
+
+  // Header
+  doc.setFillColor(26,111,196); doc.rect(0,0,PW,14,'F');
+  doc.setFillColor(255,255,255); doc.roundedRect(ML,3.5,18,7,1.5,1.5,'F');
+  doc.setTextColor(26,111,196); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('ASFA',ML+9,8,{align:'center'});
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12);
+  doc.text('Informe de Diferencias BDASFADIV',ML+22,9);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7);
+  doc.text(new Date().toLocaleString('es-ES'),PW-MR,9,{align:'right'});
+
+  let cy = 22;
+
+  // Summary card — show both sources being compared
+  const editorName = (fileName||'Editor').replace(/\.bin$/i,'');
+  const srcName    = binName.replace(/\.bin$/i,'');
+  doc.setFillColor(247,249,252); doc.rect(ML,cy,CW,26,'F');
+  doc.setDrawColor(221,227,236); doc.setLineWidth(0.3); doc.rect(ML,cy,CW,26,'S');
+
+  // Source A — Editor
+  doc.setFillColor(26,111,196); doc.roundedRect(ML+4,cy+3,8,8,1,1,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(6);
+  doc.text('A',ML+8,cy+8.5,{align:'center'});
+  doc.setTextColor(71,85,105); doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+  doc.text(editorName,ML+15,cy+8);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(148,163,184);
+  doc.text(String(editorCount)+' UT — Editor activo',ML+15,cy+12.5);
+
+  // VS separator
+  doc.setTextColor(148,163,184); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+  doc.text('vs',PW/2,cy+10,{align:'center'});
+
+  // Source B — BIN/PDF
+  doc.setFillColor(217,119,6); doc.roundedRect(PW/2+4,cy+3,8,8,1,1,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(6);
+  doc.text('B',PW/2+8,cy+8.5,{align:'center'});
+  doc.setTextColor(71,85,105); doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+  doc.text(srcName,PW/2+15,cy+8,{maxWidth:CW/2-20});
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(148,163,184);
+  doc.text(String(binCount)+' UT — Fuente comparada',PW/2+15,cy+12.5);
+
+  // Divider + summary counts
+  doc.setDrawColor(221,227,236); doc.setLineWidth(0.2); doc.line(ML,cy+18,PW-MR,cy+18);
+  doc.setTextColor(71,85,105); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  const sumParts = [
+    diffs.length+' con diferencias',
+    onlyBin.length ? onlyBin.length+' solo en B' : null,
+    onlyEditor.length ? onlyEditor.length+' solo en A' : null,
+  ].filter(Boolean).join('   |   ');
+  doc.setTextColor(diffs.length>0?220:22, diffs.length>0?38:163, diffs.length>0?38:74);
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text(sumParts, PW/2, cy+23, {align:'center'});
+
+  cy += 30;
+
+  if(onlyBin.length){
+    doc.setFillColor(254,243,199); doc.rect(ML,cy,CW,8,'F');
+    doc.setTextColor(217,119,6); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    doc.text('Solo en BIN: '+onlyBin.join(', '),ML+3,cy+5,{maxWidth:CW-6});
+    cy+=10;
+  }
+  if(onlyEditor.length){
+    doc.setFillColor(232,240,251); doc.rect(ML,cy,CW,8,'F');
+    doc.setTextColor(26,111,196); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    doc.text('Solo en Editor: '+onlyEditor.join(', '),ML+3,cy+5,{maxWidth:CW-6});
+    cy+=10;
+  }
+
+  const COL=[ML, ML+CW*0.38, ML+CW*0.69];
+  const CWs=[CW*0.37, CW*0.30, CW*0.30];
+
+  diffs.forEach(({ name, changed }) => {
+    if(cy > 260){ doc.addPage(); cy=MT; }
+    // Vehicle header
+    doc.setFillColor(26,111,196); doc.rect(ML,cy,CW,7,'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text(name,ML+3,cy+5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+    doc.text(changed.length+' diferencia'+(changed.length>1?'s':''),PW-MR-2,cy+5,{align:'right'});
+    cy+=7;
+    // Column headers
+    doc.setFillColor(247,249,252); doc.rect(ML,cy,CW,5,'F');
+    doc.setTextColor(148,163,184); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+    doc.text('Campo',COL[0]+2,cy+3.5);
+    doc.text('A: '+editorName,COL[1]+2,cy+3.5,{maxWidth:CWs[1]-4});
+    doc.text('B: '+srcName,COL[2]+2,cy+3.5,{maxWidth:CWs[2]-4});
+    cy+=5;
+    changed.forEach((c,i) => {
+      if(cy>270){ doc.addPage(); cy=MT; }
+      const bg = i%2===0 ? [255,255,255] : [247,249,252];
+      doc.setFillColor(...bg); doc.rect(ML,cy,CW,5.5,'F');
+      doc.setTextColor(71,85,105); doc.setFont('helvetica','normal'); doc.setFontSize(7);
+      doc.text(c.label,COL[0]+2,cy+4,{maxWidth:CWs[0]-2});
+      doc.setTextColor(22,163,74); doc.setFont('helvetica','bold');
+      doc.text(c.editor,COL[1]+2,cy+4,{maxWidth:CWs[1]-2});
+      doc.setTextColor(220,38,38);
+      doc.text(c.bin,COL[2]+2,cy+4,{maxWidth:CWs[2]-2});
+      cy+=5.5;
+    });
+    cy+=4;
+  });
+
+  if(diffs.length===0 && onlyBin.length===0 && onlyEditor.length===0){
+    doc.setFillColor(220,252,231); doc.rect(ML,cy,CW,10,'F');
+    doc.setTextColor(22,163,74); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.text('Los ficheros son identicos',PW/2,cy+7,{align:'center'});
+    cy+=14;
+  }
+
+  // Page numbers
+  const np=doc.getNumberOfPages();
+  for(let p=1;p<=np;p++){
+    doc.setPage(p);
+    doc.setTextColor(148,163,184); doc.setFont('helvetica','normal'); doc.setFontSize(6);
+    doc.setDrawColor(221,227,236); doc.setLineWidth(0.2); doc.line(ML,297-MB,PW-MR,297-MB);
+    doc.text('BDASFADIV EDITOR - Informe de Diferencias',ML,297-MB+4);
+    doc.text('Pag. '+p+' / '+np,PW-MR,297-MB+4,{align:'right'});
+  }
+
+  const fn='comparativa_'+new Date().toISOString().slice(0,10)+'.pdf';
+  doc.save(fn);
+  toast('✓ PDF exportado: '+fn);
+}
+
 // TOAST & MISC
 // ═══════════════════════════════════════════════════════════
 let ttt;
@@ -1559,11 +2498,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
     if(e.key==='ArrowLeft') nav(-1);
     if(e.key==='ArrowRight') nav(1);
-    if(e.key==='Escape'){ closeModal(); closeNewBinModal(); closeSaveModal(); closeOperPicker(); }
+    if(e.key==='Escape'){ closeModal(); closeNewBinModal(); closeSaveModal(); closeOperPicker(); closePdfModal(); document.getElementById('modal-open-choice').classList.remove('open'); document.getElementById('modal-compare').classList.remove('open'); document.getElementById('modal-pdf-choice').classList.remove('open'); }
   });
   document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
   document.getElementById('modal-newbin').addEventListener('click',e=>{if(e.target===document.getElementById('modal-newbin'))closeNewBinModal();});
   document.getElementById('modal-save').addEventListener('click',e=>{if(e.target===document.getElementById('modal-save'))closeSaveModal();});
+  document.getElementById('modal-pdf').addEventListener('click',e=>{if(e.target===document.getElementById('modal-pdf'))closePdfModal();});
   document.getElementById('save-fname').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doExportBin();}});
 });
 </script>
