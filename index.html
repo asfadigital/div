@@ -197,6 +197,37 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
 .cmp-only-bin{background:var(--ambl);border:1px solid var(--amb);border-radius:5px;padding:8px 12px;font-size:11px;color:var(--amb);margin-bottom:6px}
 .cmp-only-editor{background:var(--accl);border:1px solid var(--acc);border-radius:5px;padding:8px 12px;font-size:11px;color:var(--acc);margin-bottom:6px}
 
+
+/* OFFSETS SWITCH */
+.sw-wrap{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--td);user-select:none;cursor:pointer}
+.sw-wrap input[type=checkbox]{appearance:none;width:28px;height:15px;border-radius:8px;background:var(--bd);
+  border:1px solid var(--bd2);cursor:pointer;transition:background .2s;position:relative;flex-shrink:0}
+.sw-wrap input[type=checkbox]:checked{background:var(--acc);border-color:var(--acc)}
+.sw-wrap input[type=checkbox]::after{content:'';position:absolute;width:11px;height:11px;border-radius:50%;
+  background:#fff;top:1px;left:1px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw-wrap input[type=checkbox]:checked::after{left:14px}
+/* hide offsets when switch is off */
+.fk small{transition:opacity .15s;height:12px;overflow:hidden}
+body:not(.show-offsets) .fk small,body:not(.show-offsets) .sk small,body:not(.show-offsets) .cinfo{opacity:0;pointer-events:none;height:0;margin:0}
+body.show-offsets .fk small,body.show-offsets .sk small,body.show-offsets .cinfo{opacity:1}
+/* larger text when offsets are hidden */
+body:not(.show-offsets) .fk{font-size:13px;font-weight:600}
+body:not(.show-offsets) .sk{font-size:13px;font-weight:600}
+body:not(.show-offsets) .fv{font-size:14px}
+body:not(.show-offsets) .fr{min-height:34px;padding:8px 12px}
+
+/* HEX VIEW MODAL */
+.hex-grid{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;
+  background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:14px 16px;overflow-x:auto}
+.hex-row{display:flex;gap:10px;align-items:baseline;padding:2px 0;border-bottom:1px solid var(--bd)}
+.hex-row:last-child{border-bottom:none}
+.hex-row:hover{background:var(--accl)}
+.hex-off{color:var(--td);min-width:36px;font-size:10px}
+.hex-bytes{color:var(--acc);letter-spacing:2px;min-width:80px}
+.hex-val{color:var(--txt);font-weight:600;min-width:60px}
+.hex-desc{color:var(--tm);font-size:10px;flex:1}
+.hex-trailer{background:var(--ambl);border-radius:4px;padding:10px 14px;margin-top:8px;font-size:11px}
+
 /* WARN */
 .warn-row{background:var(--ambl);border-left:3px solid var(--amb);padding:8px 14px;font-size:11px;color:var(--amb);font-weight:500}
 </style>
@@ -226,6 +257,8 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
     <button class="btn bo" id="btn-edit" onclick="toggleEdit()" disabled>✏️ Editar</button>
     <button class="btn bo" id="btn-new"  onclick="openNewModal()" disabled>➕ Nueva UT</button>
     <button class="btn bo" id="btn-pdf"  onclick="exportPDF()"  disabled>📄 Generar PDF</button>
+    <label class="sw-wrap" title="Mostrar/ocultar offsets técnicos"><input type="checkbox" id="sw-offsets" onchange="toggleOffsets(this.checked)"> Offsets</label>
+    <button class="btn bo" id="btn-hex" onclick="showHexView()" disabled title="Ver volcado hexadecimal del registro">🔢 Hex</button>
     <button class="btn bg" id="btn-exp"  onclick="exportBin()" disabled>💾 Grabar BIN</button>
   </div>
 </header>
@@ -438,6 +471,18 @@ header{background:var(--s);border-bottom:1px solid var(--bd);box-shadow:var(--sh
     </div>
   </div>
 </div>
+
+<!-- HEX VIEW MODAL -->
+<div class="ov" id="modal-hex">
+  <div class="modal" style="max-width:580px">
+    <h3>Volcado Hexadecimal — <span id="hex-title">—</span></h3>
+    <p class="sub" id="hex-sub">27 bytes del registro de vehículo</p>
+    <div id="hex-content"></div>
+    <div class="mact">
+      <button class="btn bo" onclick="document.getElementById('modal-hex').classList.remove('open')">Cerrar</button>
+    </div>
+  </div>
+</div>
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -629,9 +674,9 @@ const SI=v=>`<span class="tag ${v?'tsi':'tno'}">${v?'SI':'NO'}</span>`;
 const STR=v=>`<span class="tag tstr">${v}</span>`;
 const WARN=v=>`<span class="tag twarn">⚠ ${v}</span>`;
 
-function sbar(lbl,val,max=250){
+function sbar(lbl,sub,val,max=250){
   const p=Math.min(100,Math.round((val/max)*100));
-  return`<div class="srow"><span class="sk">${lbl}</span><div class="bwrap"><div class="bbar" style="width:${p}%"></div><span class="bnum">${val} km/h</span></div></div>`;
+  return`<div class="srow"><span class="sk">${lbl}${sub?`<small style="display:block;font-size:9px;color:var(--td);margin-top:1px;transition:opacity .15s">${sub}</small>`:''}</span><div class="bwrap"><div class="bbar" style="width:${p}%"></div><span class="bnum">${val} km/h</span></div></div>`;
 }
 
 function frRow(label,sub,val,field,etype,editMode){
@@ -689,9 +734,9 @@ function renderV(idx){
   <div class="card">
     <div class="ch"><div class="cdot"></div><span class="ct">Velocidades Máximas</span></div>
     <div style="padding-top:8px;padding-bottom:8px">
-      ${sbar('Vel. Máx. General (offset 18)',v.velmax)}
-      ${sbar('Vel. Máx. ASFA-Básico (offset 19)',v.velbas)}
-      ${sbar('Vel. Máx. BTS (offset 38)',v.velbts)}
+      ${sbar('Vel. Máx. General','offset 18, 1 byte, km/h',v.velmax)}
+      ${sbar('Vel. Máx. ASFA-Básico','offset 19, 1 byte, km/h',v.velbas)}
+      ${sbar('Vel. Máx. BTS','offset 38, 1 byte, km/h',v.velbts)}
     </div>
     <div class="fgrid cols3">
       ${frRow('Vel. Máx. General','Offset 18, 1 byte, km/h',`${v.velmax} km/h`,'velmax','num',em)}
@@ -1056,6 +1101,7 @@ function doLoad(bytes,fname,size){
     document.getElementById('btn-new').disabled=false;
     document.getElementById('btn-exp').disabled=false;
     document.getElementById('btn-pdf').disabled=false;
+    document.getElementById('btn-hex').disabled=false;
     document.getElementById('btn-edit').textContent='✏️ Editar';
     document.getElementById('ebadge').style.display='none';
     document.getElementById('btn-del').style.display='none';
@@ -1349,6 +1395,7 @@ function initNewBin(){
   document.getElementById('btn-new').disabled=false;
   document.getElementById('btn-exp').disabled=false;
   document.getElementById('btn-pdf').disabled=false;
+  document.getElementById('btn-hex').disabled=false;
   document.getElementById('btn-edit').textContent='✏️ Editar';
   document.getElementById('ebadge').style.display='none';
   document.getElementById('btn-del').style.display='none';
@@ -2302,7 +2349,10 @@ function showCompareModal(){
   const { binName, diffs, onlyBin, onlyEditor, editorCount, binCount } = compareData;
   const _eN=(fileName||'Editor').replace(/\.bin$/i,''), _bN=binName.replace(/\.bin$/i,'');
   document.getElementById('cmp-sub').textContent =
-    `A: ${_eN} (${editorCount} UT)  vs  B: ${_bN} (${binCount} UT) — ${diffs.length} vehículos con diferencias`;
+    `A: ${_eN} (${editorCount} UT)  vs  B: ${_bN} (${binCount} UT) — `+
+    (diffs.length===0
+      ? `${Math.min(editorCount,binCount)} vehículos sin diferencias`
+      : `${diffs.length} vehículo${diffs.length>1?'s':''} con diferencias`);
 
   let html = '';
 
@@ -2396,7 +2446,7 @@ function exportComparePDF(){
   doc.setDrawColor(221,227,236); doc.setLineWidth(0.2); doc.line(ML,cy+18,PW-MR,cy+18);
   doc.setTextColor(71,85,105); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
   const sumParts = [
-    diffs.length+' con diferencias',
+    diffs.length===0 ? Math.min(editorCount,binCount)+' sin diferencias' : diffs.length+' con diferencias',
     onlyBin.length ? onlyBin.length+' solo en B' : null,
     onlyEditor.length ? onlyEditor.length+' solo en A' : null,
   ].filter(Boolean).join('   |   ');
@@ -2475,6 +2525,81 @@ function exportComparePDF(){
   toast('✓ PDF exportado: '+fn);
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// OFFSETS TOGGLE & HEX VIEW
+// ═══════════════════════════════════════════════════════════
+function toggleOffsets(on){
+  document.body.classList.toggle('show-offsets', on);
+}
+
+function showHexView(){
+  const v = vehicles[curIdx]; if(!v) return;
+  const REC = 27;
+  const o = v.offset !== undefined ? v.offset : curIdx * REC;
+  const bytes = binBuf ? Array.from(binBuf.slice(o, o + REC)) : [];
+
+  document.getElementById('hex-title').textContent = v.name;
+  document.getElementById('hex-sub').textContent =
+    `Offset 0x${o.toString(16).toUpperCase().padStart(4,'0')} — 27 bytes — UT ${curIdx+1} de ${vehicles.length}`;
+
+  // Field map: [offset_local, length, description, decode_fn]
+  const FIELDS = [
+    [0,  6, 'Denominación (ASCII)',     b => b.map(x=>x>=32&&x<127?String.fromCharCode(x):'.').join('')],
+    [6,  2, 'Word1 — flags cfg.1 (LE)',b => '0x'+((b[0]|(b[1]<<8)).toString(16).toUpperCase().padStart(4,'0'))
+                                            +' = b'+((b[1]<<8|b[0]).toString(2).padStart(16,'0'))],
+    [8,  2, 'Word2 — flags cfg.2 (LE)',b => '0x'+((b[0]|(b[1]<<8)).toString(16).toUpperCase().padStart(4,'0'))
+                                            +' = b'+((b[1]<<8|b[0]).toString(2).padStart(16,'0'))],
+    [10, 1, 'Vel. Máx. general (km/h)', b => b[0]+' km/h'],
+    [11, 1, 'Vel. Máx. ASFA-Básico (km/h)', b => b[0]+' km/h'],
+    [12, 2, 'Operador (Word LE)',       b => (b[0]|(b[1]<<8))+' ('+( OPERS[b[0]|(b[1]<<8)]||'?')+')'],
+    [14, 1, 'Pulsos por vuelta',        b => b[0]+' p/v'],
+    [15, 2, 'Diám. mín. rueda (mm LE)',b => (b[0]|(b[1]<<8))+' mm'],
+    [17, 2, 'Diám. máx. rueda (mm LE)',b => (b[0]|(b[1]<<8))+' mm'],
+    [19, 1, 'Dist. aviso S3-4 (dm)',   b => b[0]+' dm'],
+    [20, 1, 'Dist. aviso S3-5 (dm)',   b => b[0]+' dm'],
+    [21, 1, 'Tiempo aviso S3-5 (s)',   b => b[0]+' s'],
+    [22, 1, 'Vel. Máx. BTS (km/h)',    b => b[0]+' km/h'],
+    [23, 3, 'Checksum (3 bytes LE)',    b => '0x'+(b[0]|(b[1]<<8)|(b[2]<<16)).toString(16).toUpperCase().padStart(6,'0')],
+    [26, 1, 'Residuo Word4 (reservado)',b => '0x'+b[0].toString(16).toUpperCase().padStart(2,'0')],
+  ];
+
+  let html = '<div class="hex-grid">';
+  // Column header
+  html += `<div class="hex-row" style="font-size:9px;font-weight:700;color:var(--td);border-bottom:2px solid var(--bd2)">
+    <span class="hex-off">OFF</span>
+    <span class="hex-bytes">HEX</span>
+    <span class="hex-val">VALOR</span>
+    <span class="hex-desc">CAMPO</span>
+  </div>`;
+
+  FIELDS.forEach(([off, len, desc, decode]) => {
+    const slice = bytes.slice(off, off + len);
+    const hexStr = slice.map(b => b.toString(16).toUpperCase().padStart(2,'0')).join(' ');
+    const valStr = decode(slice);
+    html += `<div class="hex-row">
+      <span class="hex-off">${off.toString().padStart(2,'0')}</span>
+      <span class="hex-bytes">${hexStr}</span>
+      <span class="hex-val" style="font-size:10px">${valStr}</span>
+      <span class="hex-desc">${desc}</span>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Raw hex dump
+  const allHex = bytes.map((b,i) => {
+    const str = b.toString(16).toUpperCase().padStart(2,'0');
+    return `<span title="offset ${i}">${str}</span>`;
+  }).join(' ');
+  html += `<div class="hex-trailer">
+    <div style="font-size:10px;font-weight:700;color:var(--td);margin-bottom:6px">VOLCADO RAW (27 bytes)</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--acc);letter-spacing:1px;line-height:2">${allHex}</div>
+  </div>`;
+
+  document.getElementById('hex-content').innerHTML = html;
+  document.getElementById('modal-hex').classList.add('open');
+}
+
 // TOAST & MISC
 // ═══════════════════════════════════════════════════════════
 let ttt;
@@ -2498,7 +2623,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
     if(e.key==='ArrowLeft') nav(-1);
     if(e.key==='ArrowRight') nav(1);
-    if(e.key==='Escape'){ closeModal(); closeNewBinModal(); closeSaveModal(); closeOperPicker(); closePdfModal(); document.getElementById('modal-open-choice').classList.remove('open'); document.getElementById('modal-compare').classList.remove('open'); document.getElementById('modal-pdf-choice').classList.remove('open'); }
+    if(e.key==='Escape'){ closeModal(); closeNewBinModal(); closeSaveModal(); closeOperPicker(); closePdfModal(); document.getElementById('modal-open-choice').classList.remove('open'); document.getElementById('modal-compare').classList.remove('open'); document.getElementById('modal-pdf-choice').classList.remove('open'); document.getElementById('modal-hex').classList.remove('open'); }
   });
   document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
   document.getElementById('modal-newbin').addEventListener('click',e=>{if(e.target===document.getElementById('modal-newbin'))closeNewBinModal();});
