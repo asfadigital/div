@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BDASFADIV — Visor / Editor v1.0</title>
+<title>BDASFADIV — Visor / Editor</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 :root{
@@ -285,7 +285,7 @@ body:not(.show-offsets) .fr{min-height:34px;padding:8px 12px}
 <header>
   <div class="brand">
     <span class="badge">ASFA</span>
-    <div style="display:flex;flex-direction:column;line-height:1.2"><span style="font-size:14px;font-weight:700">BDASFADIV</span><span style="font-size:10px;color:var(--td);font-weight:400">(ET 03.365.008.6) v1.0</span></div>
+    <h1>BDASFADIV <small>· Visor / Editor (ET 03.365.008.6)</small></h1>
   </div>
   <div class="sep"></div>
   <div class="mpills">
@@ -493,6 +493,7 @@ body:not(.show-offsets) .fr{min-height:34px;padding:8px 12px}
     </div>
     <div class="mact">
       <button class="btn bo" onclick="document.getElementById('modal-compare').classList.remove('open')">Cerrar</button>
+      <button class="btn bg" id="btn-cmp-merge" onclick="applyCompareMerge()">⬇️ Insertar cambios en datos cargados</button>
       <button class="btn bp" id="btn-cmp-pdf" onclick="exportComparePDF()">📄 Exportar PDF</button>
     </div>
   </div>
@@ -2343,7 +2344,8 @@ function runCompareParsedVehicles(pdfVehicles, sourceName){
   compareData = {
     binName: sourceName, diffs,
     onlyBin: onlySource, onlyEditor,
-    editorCount: vehicles.length, binCount: pdfVehicles.length
+    editorCount: vehicles.length, binCount: pdfVehicles.length,
+    sourceVehicles: pdfVehicles
   };
   showCompareModal();
 }
@@ -2417,7 +2419,7 @@ function runCompare(bytes, fname){
     if(changed.length) diffs.push({ name, changed });
   });
 
-  compareData = { binName: fname, diffs, onlyBin, onlyEditor, editorCount: vehicles.length, binCount: numVeh };
+  compareData = { binName: fname, diffs, onlyBin, onlyEditor, editorCount: vehicles.length, binCount: numVeh, sourceVehicles: binVehicles };
   showCompareModal();
 }
 
@@ -2469,7 +2471,120 @@ function showCompareModal(){
   }
 
   document.getElementById('cmp-body').innerHTML = html;
+  // Mostrar botón de merge solo si hay algo que insertar
+  const mergeBtn = document.getElementById('btn-cmp-merge');
+  const hasMergeable = diffs.length > 0 || onlyBin.length > 0;
+  mergeBtn.style.display = hasMergeable ? '' : 'none';
   document.getElementById('modal-compare').classList.add('open');
+}
+
+// ═══════════════════════════════════════════════════════════
+// MERGE — aplica los cambios detectados en compareData sobre
+//         los vehículos del editor
+// ═══════════════════════════════════════════════════════════
+function applyCompareMerge(){
+  const { diffs, onlyBin, binName } = compareData;
+
+  // Necesita alguna diferencia aplicable (vehículos en común con diffs)
+  if(!diffs.length && !onlyBin.length){
+    toast('No hay cambios para insertar — los datos ya son idénticos');
+    return;
+  }
+
+  // Contar cambios reales de campos (solo vehículos en común)
+  const totalFieldChanges = diffs.reduce((s, d) => s + d.changed.length, 0);
+  const msg = [
+    totalFieldChanges
+      ? `• ${diffs.length} UT con ${totalFieldChanges} campo${totalFieldChanges>1?'s':''} modificado${totalFieldChanges>1?'s':''}`
+      : null,
+    onlyBin.length
+      ? `• ${onlyBin.length} UT nueva${onlyBin.length>1?'s':''} que se añadirá${onlyBin.length>1?'n':''}: ${onlyBin.join(', ')}`
+      : null,
+  ].filter(Boolean).join('\n');
+
+  if(!confirm(`¿Insertar los siguientes cambios de "${binName}" en los datos del editor?\n\n${msg}\n\nEsta acción no se puede deshacer.`)) return;
+
+  // Mapa de nombre → campo→valor nuevo para los diffs
+  // "bin" en compareData = valor del fichero externo (fuente B)
+  // Queremos aplicar los valores de B sobre el editor
+  const FIELD_SETTERS = {
+    'Sistema':           (v,val) => { v.sistAVE      = val === 'AVE'; },
+    'Tipo Cabina':       (v,val) => { v.bicabina      = val === 'Bicabina'; },
+    'Fase':              (v,val) => { v.fase2         = val === 'Fase 2'; },
+    'Conex. Registrador':(v,val) => { v.conexSerie    = val === 'Si'; },
+    'Modo Convencional': (v,val) => { v.modoConv      = val === 'Disponible'; },
+    'Modo AVE':          (v,val) => { v.modoAVE       = val === 'Disponible'; },
+    'Modo RAM':          (v,val) => { v.modoRAM       = val === 'Disponible'; },
+    'Modo BTS':          (v,val) => { v.modoBTS       = val === 'Disponible'; },
+    'Umbral 5 km/h':     (v,val) => { v.umb5          = val === 'Si'; },
+    'Umbral 35 km/h':    (v,val) => { v.umb35         = val === 'Si'; },
+    'Umbral 50 km/h':    (v,val) => { v.umb50         = val === 'Si'; },
+    'Umbral 60 km/h':    (v,val) => { v.umb60         = val === 'Si'; },
+    'Umbral 160 km/h':   (v,val) => { v.umb160        = val === 'Si'; },
+    'Umbral 180 km/h':   (v,val) => { v.umb180        = val === 'Si'; },
+    'Salida Analogica':  (v,val) => { v.salCorriente  = val === 'Corriente'; },
+    'Fondo Tension':     (v,val) => { v.fondo10V      = val === '10V'; },
+    'Curvas ASFA-B':     (v,val) => { v.curvasAsfaD   = val === 'ASFA-D'; },
+    'Reconoc. L1':       (v,val) => { v.recs5         = val === '5'; },
+    'Curvas T=':         (v,val) => { v.curvT120      = val === 'T=120'; },
+    'Subsist. Captac.':  (v,val) => { v.mono2subsist  = val === '2'; },
+    'Variante Mono.':    (v,val) => { v.variante2     = val === '2'; },
+    'Vel. Max. (km/h)':  (v,val) => { v.velmax        = parseInt(val,10)||v.velmax; },
+    'Vel. Max. Basico':  (v,val) => { v.velbas        = parseInt(val,10)||v.velbas; },
+    'Vel. Max. BTS':     (v,val) => { v.velbts        = parseInt(val,10)||v.velbts; },
+    'Operador':          (v,val) => { v.oper          = parseInt(val,10)||v.oper; },
+    'Pulsos/Vuelta':     (v,val) => { v.pulsos        = parseInt(val,10)||v.pulsos; },
+    'Diam. Min. (mm)':   (v,val) => { v.dmin         = parseInt(val,10)||v.dmin; },
+    'Diam. Max. (mm)':   (v,val) => { v.dmax         = parseInt(val,10)||v.dmax; },
+    'Dist. S3-4 (dm)':   (v,val) => { v.distrec      = parseInt(val,10)||0; },
+    'Dist. S3-5 (dm)':   (v,val) => { v.distS35      = parseInt(val,10)||0; },
+    'Tiempo S3-5 (s)':   (v,val) => { v.tiemS35      = parseInt(val,10)||0; },
+  };
+
+  const editorMap = {};
+  vehicles.forEach(v => editorMap[v.name.trim()] = v);
+
+  let nModified = 0;
+
+  // 1. Aplicar cambios de campo en vehículos en común
+  diffs.forEach(({ name, changed }) => {
+    const ev = editorMap[name];
+    if(!ev) return;
+    changed.forEach(({ label, bin: newVal }) => {
+      const setter = FIELD_SETTERS[label];
+      if(setter){ setter(ev, newVal); ev._dirty = true; nModified++; }
+    });
+    encVeh(ev);
+    modified.add(ev.idx);
+  });
+
+  // 2. Añadir vehículos nuevos (onlyBin) — requiere acceso a los vehículos
+  //    del fichero externo, que están en compareData.sourceVehicles (si existe)
+  let nAdded = 0;
+  if(onlyBin.length && compareData.sourceVehicles){
+    const srcMap = {};
+    compareData.sourceVehicles.forEach(v => srcMap[v.name.trim()] = v);
+    onlyBin.forEach(name => {
+      const sv = srcMap[name];
+      if(!sv) return;
+      // Clonar y añadir limpio
+      const nv = Object.assign({}, sv, { rawChks: null, _dirty: true });
+      delete nv.idx; delete nv.offset;
+      addVehicle(nv);
+      nAdded++;
+    });
+  }
+
+  rebuildBin();
+  renderSidebar();
+  if(vehicles.length > 0) selV(curIdx < vehicles.length ? curIdx : 0);
+
+  document.getElementById('modal-compare').classList.remove('open');
+
+  const parts = [];
+  if(nModified) parts.push(`${nModified} campo${nModified>1?'s':''} actualizado${nModified>1?'s':''}`);
+  if(nAdded)    parts.push(`${nAdded} UT añadida${nAdded>1?'s':''}`);
+  toast('✓ Merge aplicado — ' + (parts.join(', ') || 'sin cambios'));
 }
 
 function exportComparePDF(){
@@ -2904,220 +3019,6 @@ function showStats(){
       +'<td>'+(v.fase2?'F2':'F1')+'</td></tr>';
   });
   h+='</table></div></div></div>';
-
-
-  // ── Sección: Distancias S3 ────────────────────────────────
-  const s34act=vehicles.filter(v=>v.distrec>0);
-  const s35act=vehicles.filter(v=>v.distS35>0||v.tiemS35>0);
-  const avgS34=s34act.length?Math.round(s34act.reduce((a,v)=>a+v.distrec,0)/s34act.length):0;
-  const avgS35d=s35act.length?Math.round(s35act.filter(v=>v.distS35>0).reduce((a,v)=>a+v.distS35,0)/(s35act.filter(v=>v.distS35>0).length||1)):0;
-  const avgS35t=s35act.length?Math.round(s35act.filter(v=>v.tiemS35>0).reduce((a,v)=>a+v.tiemS35,0)/(s35act.filter(v=>v.tiemS35>0).length||1)):0;
-
-  h+='<div class="stats-section"><h4>Recordatorio de Parada (Sonidos S3)</h4><div class="stats-row3">';
-  // S3-4
-  h+='<div class="stats-box"><div class="stats-box-title">Distancia aviso S3-4</div><div class="stats-bar-wrap">';
-  const s34Dist={};
-  vehicles.forEach(v=>{const k=v.distrec===0?'Desact.':v.distrec+' dm';s34Dist[k]=(s34Dist[k]||0)+1;});
-  const maxS34=Math.max(...Object.values(s34Dist))||1;
-  Object.entries(s34Dist).sort((a,b)=>b[1]-a[1]).forEach(([k,n])=>{
-    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+k+'</span>'
-      +'<div class="stats-bar-track">'+bar(n,maxS34,k==='Desact.'?'#cbd5e1':'#0891b2')+'</div>'
-      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
-  });
-  h+='<div style="padding:4px 0 2px;font-size:10px;color:var(--td);border-top:1px solid var(--bd);margin-top:4px">Activo en '+s34act.length+' UTs · media '+avgS34+' dm</div>';
-  h+='</div></div>';
-  // S3-5 distancia
-  h+='<div class="stats-box"><div class="stats-box-title">Distancia aviso S3-5</div><div class="stats-bar-wrap">';
-  const s35Dist={};
-  vehicles.forEach(v=>{const k=v.distS35===0?'Desact.':v.distS35+' dm';s35Dist[k]=(s35Dist[k]||0)+1;});
-  const maxS35d=Math.max(...Object.values(s35Dist))||1;
-  Object.entries(s35Dist).sort((a,b)=>b[1]-a[1]).forEach(([k,n])=>{
-    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+k+'</span>'
-      +'<div class="stats-bar-track">'+bar(n,maxS35d,k==='Desact.'?'#cbd5e1':'#059669')+'</div>'
-      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
-  });
-  h+='<div style="padding:4px 0 2px;font-size:10px;color:var(--td);border-top:1px solid var(--bd);margin-top:4px">Media '+avgS35d+' dm (excl. desact.)</div>';
-  h+='</div></div>';
-  // S3-5 tiempo
-  h+='<div class="stats-box"><div class="stats-box-title">Tiempo aviso S3-5</div><div class="stats-bar-wrap">';
-  const s35Tiem={};
-  vehicles.forEach(v=>{const k=v.tiemS35===0?'Desact.':v.tiemS35+' s';s35Tiem[k]=(s35Tiem[k]||0)+1;});
-  const maxS35t=Math.max(...Object.values(s35Tiem))||1;
-  Object.entries(s35Tiem).sort((a,b)=>b[1]-a[1]).forEach(([k,n])=>{
-    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+k+'</span>'
-      +'<div class="stats-bar-track">'+bar(n,maxS35t,k==='Desact.'?'#cbd5e1':'#d97706')+'</div>'
-      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
-  });
-  h+='<div style="padding:4px 0 2px;font-size:10px;color:var(--td);border-top:1px solid var(--bd);margin-top:4px">Media '+avgS35t+' s (excl. desact.)</div>';
-  h+='</div></div>';
-  h+='</div></div>';
-
-  // ── Sección: Velocidades cruzadas ─────────────────────────
-  h+='<div class="stats-section"><h4>Velocidades Cruzadas — Máx. General vs ASFA-Básico vs BTS</h4>';
-  h+='<div class="stats-box"><div class="stats-box-title">Relación entre velocidades por vehículo</div>'
-    +'<div style="overflow-x:auto"><table class="stats-table">'
-    +'<tr><th>Denominación</th><th>V.Máx</th><th>V.Bás.</th><th>V.BTS</th>'
-    +'<th>Básico vs Máx.</th><th>BTS vs Máx.</th><th>Modo BTS</th></tr>';
-  [...vehicles].sort((a,b)=>b.velmax-a.velmax).forEach(v=>{
-    const diffB=v.velmax>0?Math.round((v.velbas/v.velmax)*100):0;
-    const diffBts=v.velmax>0?Math.round((v.velbts/v.velmax)*100):0;
-    const bcol=diffB>=100?'var(--red)':diffB>=80?'var(--amb)':'var(--grn)';
-    const btscol=v.modoBTS?(diffBts>=100?'var(--red)':diffBts>=80?'var(--amb)':'var(--grn)'):'var(--td)';
-    h+='<tr>'
-      +'<td>'+v.name+'</td>'
-      +'<td>'+v.velmax+' km/h</td>'
-      +'<td>'+v.velbas+' km/h</td>'
-      +'<td style="color:'+(v.modoBTS?'var(--txt)':'var(--td)')+'">'+v.velbts+' km/h</td>'
-      +'<td style="color:'+bcol+'">'+diffB+'%</td>'
-      +'<td style="color:'+btscol+'">'+(v.modoBTS?diffBts+'%':'—')+'</td>'
-      +'<td>'+(v.modoBTS?'<span style="color:var(--grn);font-weight:700">✓ Sí</span>':'<span style="color:var(--td)">No</span>')+'</td>'
-      +'</tr>';
-  });
-  h+='</table></div></div></div>';
-
-  // ── Sección: Integridad checksums ─────────────────────────
-  h+='<div class="stats-section"><h4>Integridad de Registros — Checksums</h4><div class="stats-row2">';
-  // Distribución checksum OK/BAD por barra
-  const csOkList=vehicles.filter(v=>v.suma===v.chks);
-  const csBadList=vehicles.filter(v=>v.suma!==v.chks);
-  h+='<div class="stats-box"><div class="stats-box-title">Estado checksum por vehículo</div><div class="stats-bar-wrap">';
-  const csBuckets=[
-    {l:'Correcto (suma = chks)',n:csOkList.length,c:'#059669'},
-    {l:'No coincide',          n:csBadList.length,c:'#dc2626'},
-  ];
-  const maxCs=Math.max(...csBuckets.map(x=>x.n))||1;
-  csBuckets.forEach(b=>{
-    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+b.l+'</span>'
-      +'<div class="stats-bar-track">'+bar(b.n,maxCs,b.c)+'</div>'
-      +'<span class="stats-bar-num">'+b.n+'</span><span class="stats-bar-pct">'+pct(b.n,N)+'%</span></div>';
-  });
-  h+='</div></div>';
-  // Tabla de errores de checksum o mensaje OK
-  h+='<div class="stats-box"><div class="stats-box-title">Detalle de errores de checksum</div>';
-  if(csBadList.length===0){
-    h+='<div class="anomaly-list"><div class="anomaly-item ok"><span class="anomaly-name">✓ —</span><span>Todos los registros tienen checksum correcto</span></div></div>';
-  } else {
-    h+='<div class="anomaly-list">';
-    csBadList.forEach(v=>{
-      const diff=Math.abs(v.suma-v.chks);
-      h+='<div class="anomaly-item err"><span class="anomaly-name">✗ '+v.name+'</span>'
-        +'<span>Calc: '+v.suma+' (0x'+v.suma.toString(16).toUpperCase()+') · Fich: '+v.chks+' · Δ='+diff+'</span></div>';
-    });
-    h+='</div>';
-  }
-  h+='</div>';
-  h+='</div></div>';
-
-  // ── Sección: Combinaciones de modos ──────────────────────
-  h+='<div class="stats-section"><h4>Combinaciones de Modos de Operación</h4>';
-  const comboMap={};
-  vehicles.forEach(v=>{
-    const parts=[];
-    if(v.modoConv)  parts.push('Conv');
-    if(v.modoAVE)   parts.push('AVE');
-    if(v.modoRAM)   parts.push('RAM');
-    if(v.modoBTS)   parts.push('BTS');
-    const k=parts.length?parts.join('+'):'Ninguno';
-    comboMap[k]=(comboMap[k]||0)+1;
-  });
-  const comboList=Object.entries(comboMap).sort((a,b)=>b[1]-a[1]);
-  const maxCombo=comboList[0]?comboList[0][1]:1;
-  const comboColors={'Conv':'#1a6fc4','AVE':'#7c3aed','RAM':'#0891b2','BTS':'#d97706','Conv+RAM':'#059669','Conv+BTS':'#d97706','Ninguno':'#94a3b8'};
-  h+='<div class="stats-box"><div class="stats-box-title">Combinaciones únicas de modos disponibles</div><div class="stats-bar-wrap">';
-  comboList.forEach(([k,n])=>{
-    const c=comboColors[k]||'#6366f1';
-    h+='<div class="stats-bar-row"><span class="stats-bar-lbl" title="'+k+'">'+k+'</span>'
-      +'<div class="stats-bar-track">'+bar(n,maxCombo,c)+'</div>'
-      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
-  });
-  h+='</div></div></div>';
-
-  // ── Sección: Salida analógica y Reconocimientos L1 ────────
-  h+='<div class="stats-section"><h4>Salida Analógica y Reconocimientos L1</h4><div class="stats-row2">';
-  // Salida analógica
-  const salTen=vehicles.filter(v=>!v.salCorriente);
-  const salCor=vehicles.filter(v=>v.salCorriente);
-  const fondo5=salTen.filter(v=>!v.fondo10V).length;
-  const fondo10=salTen.filter(v=>v.fondo10V).length;
-  const salSegs=[
-    {l:'Tensión 0-5V',    n:fondo5,  c:'#0891b2'},
-    {l:'Tensión 0-10V',   n:fondo10, c:'#1a6fc4'},
-    {l:'Corriente 4-20mA',n:salCor.length,c:'#7c3aed'},
-  ];
-  const maxSal=Math.max(...salSegs.map(s=>s.n))||1;
-  h+='<div class="stats-box"><div class="stats-box-title">Tipo de Salida Analógica</div><div class="stats-bar-wrap">';
-  salSegs.forEach(s=>{
-    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+s.l+'</span>'
-      +'<div class="stats-bar-track">'+bar(s.n,maxSal,s.c)+'</div>'
-      +'<span class="stats-bar-num">'+s.n+'</span><span class="stats-bar-pct">'+pct(s.n,N)+'%</span></div>';
-  });
-  h+='</div></div>';
-  // Reconocimientos L1 por operador
-  // Agrupar por operador x recs5
-  const recsOperMap={};
-  vehicles.forEach(v=>{
-    const opNombre=OPERS[v.oper]||('Cod. '+v.oper);
-    if(!recsOperMap[opNombre]) recsOperMap[opNombre]={r1:0,r5:0,total:0};
-    recsOperMap[opNombre].total++;
-    if(v.recs5) recsOperMap[opNombre].r5++;
-    else        recsOperMap[opNombre].r1++;
-  });
-  const recsOperList=Object.entries(recsOperMap).sort((a,b)=>b[1].total-a[1].total);
-  const recs1total=vehicles.filter(v=>!v.recs5).length;
-  const recs5total=vehicles.filter(v=>v.recs5).length;
-  h+='<div class="stats-box"><div class="stats-box-title">Nº Reconocimientos L1 por Operador (Word1 bit14)</div>'
-    +'<div style="overflow-x:auto"><table class="stats-table">'
-    +'<tr><th>Operador</th><th>UTs</th>'
-    +'<th style="color:#0891b2">1 Reconoc.</th><th style="color:#0891b2">%</th>'
-    +'<th style="color:#7c3aed">5 Reconoc.</th><th style="color:#7c3aed">%</th></tr>';
-  recsOperList.forEach(([op,d])=>{
-    h+='<tr>'
-      +'<td style="font-family:inherit;font-size:10px;color:var(--tm)">'+op+'</td>'
-      +'<td>'+d.total+'</td>'
-      +'<td style="color:#0891b2">'+d.r1+'</td>'
-      +'<td style="color:#0891b2;font-size:10px">'+pct(d.r1,d.total)+'%</td>'
-      +'<td style="color:#7c3aed">'+d.r5+'</td>'
-      +'<td style="color:#7c3aed;font-size:10px">'+pct(d.r5,d.total)+'%</td>'
-      +'</tr>';
-  });
-  h+='<tr style="border-top:2px solid var(--bd2);font-weight:800">'
-    +'<td style="font-family:inherit;color:var(--tm)">TOTAL</td>'
-    +'<td>'+N+'</td>'
-    +'<td style="color:#0891b2">'+recs1total+'</td>'
-    +'<td style="color:#0891b2;font-size:10px">'+pct(recs1total,N)+'%</td>'
-    +'<td style="color:#7c3aed">'+recs5total+'</td>'
-    +'<td style="color:#7c3aed;font-size:10px">'+pct(recs5total,N)+'%</td>'
-    +'</tr>'
-    +'</table></div>'
-    +'<div style="padding:6px 14px 8px;font-size:10px;color:var(--td)">'
-    +'Solo aplica a vehículos Fase 1 (bit14 ignorado en Fase 2)'
-    +'</div></div>';
-  // Combinaciones de umbrales más frecuentes
-  const umbComboMap={};
-  vehicles.forEach(v=>{
-    const activos=[];
-    if(v.umb5)   activos.push('5');
-    if(v.umb35)  activos.push('35');
-    if(v.umb50)  activos.push('50');
-    if(v.umb60)  activos.push('60');
-    if(v.umb160) activos.push('160');
-    if(v.umb180) activos.push('180');
-    const k=activos.length?activos.join('+')+'  km/h':'Ninguno';
-    umbComboMap[k]=(umbComboMap[k]||0)+1;
-  });
-  const umbComboList=Object.entries(umbComboMap).sort((a,b)=>b[1]-a[1]);
-  const maxUmbCombo=umbComboList[0]?umbComboList[0][1]:1;
-  const umbComboColors=['#1a6fc4','#0891b2','#059669','#7c3aed','#d97706','#dc2626','#6366f1','#14b8a6'];
-  h+='<div class="stats-box"><div class="stats-box-title">Combinaciones de Umbrales Activos</div><div class="stats-bar-wrap">';
-  umbComboList.forEach(([k,n],i)=>{
-    h+='<div class="stats-bar-row"><span class="stats-bar-lbl" title="'+k+'">'+k+'</span>'
-      +'<div class="stats-bar-track">'+bar(n,maxUmbCombo,umbComboColors[i%umbComboColors.length])+'</div>'
-      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
-  });
-  const umbSets3=vehicles.filter(v=>[v.umb5,v.umb35,v.umb50,v.umb60,v.umb160,v.umb180].filter(Boolean).length===3).length;
-  h+='<div style="padding:4px 0 2px;font-size:10px;color:var(--td);border-top:1px solid var(--bd);margin-top:4px">'+umbComboList.length+' combinaciones distintas · '+umbSets3+' UTs con exactamente 3 umbrales</div>';
-  h+='</div></div>';
-  h+='</div></div>';
 
   document.getElementById('stats-body').innerHTML=h;
   document.getElementById('modal-stats').classList.add('open');
