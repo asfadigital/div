@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BDASFADIV — Visor / Editor</title>
+<title>BDASFADIV — Visor / Editor v1.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 :root{
@@ -230,6 +230,52 @@ body:not(.show-offsets) .fr{min-height:34px;padding:8px 12px}
 
 /* WARN */
 .warn-row{background:var(--ambl);border-left:3px solid var(--amb);padding:8px 14px;font-size:11px;color:var(--amb);font-weight:500}
+
+/* STATS MODAL */
+.stats-modal{background:var(--s);border-radius:12px;padding:28px 28px 22px;width:min(900px,96vw);box-shadow:0 8px 32px rgba(0,0,0,.18);max-height:92vh;overflow-y:auto}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stats-kpi{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:14px 16px;text-align:center}
+.stats-kpi .kval{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--acc);line-height:1.1}
+.stats-kpi .klbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--td);margin-top:4px}
+.stats-kpi.grn .kval{color:var(--grn)} .stats-kpi.amb .kval{color:var(--amb)} .stats-kpi.red .kval{color:var(--red)}
+.stats-section{margin-bottom:16px}
+.stats-section h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--td);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bd)}
+.stats-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.stats-box{background:var(--s2);border:1px solid var(--bd);border-radius:7px;overflow:hidden}
+.stats-box-title{background:var(--bg);border-bottom:1px solid var(--bd);padding:7px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tm)}
+.stats-bar-wrap{padding:10px 14px;display:flex;flex-direction:column;gap:7px}
+.stats-bar-row{display:flex;align-items:center;gap:8px}
+.stats-bar-lbl{font-size:11px;color:var(--tm);font-weight:500;min-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stats-bar-track{flex:1;background:var(--bd);border-radius:3px;height:14px;position:relative;overflow:hidden}
+.stats-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.stats-bar-num{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;min-width:28px;text-align:right;color:var(--txt)}
+.stats-bar-pct{font-size:9px;color:var(--td);min-width:30px;text-align:right}
+.stats-table{width:100%;border-collapse:collapse;font-size:11px}
+.stats-table th{background:var(--bg);padding:6px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--td);border-bottom:1px solid var(--bd)}
+.stats-table td{padding:6px 10px;border-bottom:1px solid var(--bd);font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--txt)}
+.stats-table tr:last-child td{border-bottom:none}
+.stats-table tr:hover td{background:var(--accl)}
+.heat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:4px;padding:10px 14px}
+.heat-cell{border-radius:5px;padding:5px 4px;text-align:center;border:1px solid transparent;cursor:default}
+.heat-cell .hc-val{font-size:13px;font-weight:800;font-family:'JetBrains Mono',monospace}
+.heat-cell .hc-lbl{font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:1px;opacity:.75}
+.hc-0{background:#f1f5f9;border-color:var(--bd);color:var(--td)}
+.hc-1{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}
+.hc-2{background:#bbf7d0;border-color:#86efac;color:#15803d}
+.hc-3{background:#fef08a;border-color:#fde047;color:#854d0e}
+.hc-4{background:#fecaca;border-color:#fca5a5;color:#b91c1c}
+.stats-donut-wrap{display:flex;align-items:center;gap:14px;padding:10px 14px}
+.stats-legend{display:flex;flex-direction:column;gap:5px;flex:1}
+.stats-legend-item{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:500;color:var(--tm)}
+.stats-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.stats-legend-val{font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--txt);margin-left:auto}
+.anomaly-list{padding:8px 14px;display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto}
+.anomaly-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:5px;font-size:11px}
+.anomaly-item.err{background:var(--redl);border:1px solid #fca5a5;color:var(--red)}
+.anomaly-item.warn{background:var(--ambl);border:1px solid #fcd34d;color:var(--amb)}
+.anomaly-item.ok{background:var(--grnl);border:1px solid #86efac;color:var(--grn)}
+.anomaly-name{font-weight:700;font-family:'JetBrains Mono',monospace;min-width:70px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -239,7 +285,7 @@ body:not(.show-offsets) .fr{min-height:34px;padding:8px 12px}
 <header>
   <div class="brand">
     <span class="badge">ASFA</span>
-    <h1>BDASFADIV <small>· Visor / Editor (ET 03.365.008.6)</small></h1>
+    <div style="display:flex;flex-direction:column;line-height:1.2"><span style="font-size:14px;font-weight:700">BDASFADIV</span><span style="font-size:10px;color:var(--td);font-weight:400">(ET 03.365.008.6) v1.0</span></div>
   </div>
   <div class="sep"></div>
   <div class="mpills">
@@ -260,6 +306,7 @@ body:not(.show-offsets) .fr{min-height:34px;padding:8px 12px}
     <label class="sw-wrap" title="Mostrar/ocultar offsets técnicos"><input type="checkbox" id="sw-offsets" onchange="toggleOffsets(this.checked)"> Offsets</label>
     <button class="btn bo" id="btn-hex" onclick="showHexView()" disabled title="Ver volcado hexadecimal del registro">🔢 Hex</button>
     <button class="btn bg" id="btn-exp"  onclick="exportBin()" disabled>💾 Grabar BIN</button>
+    <button class="btn bo" id="btn-stats" onclick="showStats()" disabled>📊 Estadísticas</button>
   </div>
 </header>
 
@@ -481,6 +528,20 @@ body:not(.show-offsets) .fr{min-height:34px;padding:8px 12px}
     <div class="mact">
       <button class="btn bo" onclick="document.getElementById('modal-hex').classList.remove('open')">Cerrar</button>
     </div>
+  </div>
+</div>
+<!-- STATS MODAL -->
+<div class="ov" id="modal-stats">
+  <div class="stats-modal">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <span style="font-size:20px">📊</span>
+      <div>
+        <h3 style="font-size:16px;font-weight:700;margin:0">Estadísticas de la Base de Datos</h3>
+        <p style="color:var(--td);font-size:12px;margin:2px 0 0" id="stats-subtitle">—</p>
+      </div>
+      <button class="btn bo" style="margin-left:auto" onclick="document.getElementById('modal-stats').classList.remove('open')">✕ Cerrar</button>
+    </div>
+    <div id="stats-body"></div>
   </div>
 </div>
 <!-- TOAST -->
@@ -1102,6 +1163,7 @@ function doLoad(bytes,fname,size){
     document.getElementById('btn-exp').disabled=false;
     document.getElementById('btn-pdf').disabled=false;
     document.getElementById('btn-hex').disabled=false;
+    document.getElementById('btn-stats').disabled=false;
     document.getElementById('btn-edit').textContent='✏️ Editar';
     document.getElementById('ebadge').style.display='none';
     document.getElementById('btn-del').style.display='none';
@@ -1396,6 +1458,7 @@ function initNewBin(){
   document.getElementById('btn-exp').disabled=false;
   document.getElementById('btn-pdf').disabled=false;
   document.getElementById('btn-hex').disabled=false;
+    document.getElementById('btn-stats').disabled=false;
   document.getElementById('btn-edit').textContent='✏️ Editar';
   document.getElementById('ebadge').style.display='none';
   document.getElementById('btn-del').style.display='none';
@@ -2610,6 +2673,454 @@ function showHexView(){
 
   document.getElementById('hex-content').innerHTML = html;
   document.getElementById('modal-hex').classList.add('open');
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// ESTADÍSTICAS
+// ═══════════════════════════════════════════════════════════
+function showStats(){
+  if(!vehicles.length) return;
+  const N = vehicles.length;
+  document.getElementById('stats-subtitle').textContent =
+    fileName + ' · ' + N + ' unidad' + (N!==1?'es':'') + ' de tracción';
+
+  const pct = (n,t) => t ? Math.round(n/t*100) : 0;
+  const bar = (n,max,color) => '<div class="stats-bar-fill" style="width:'+(max?Math.round(n/max*100):0)+'%;background:'+(color||'var(--acc)')+'"></div>';
+
+  const crcOk     = vehicles.filter(v=>v.suma===v.chks).length;
+  const crcBad    = N - crcOk;
+  const fase2     = vehicles.filter(v=>v.fase2).length;
+  const aveCount  = vehicles.filter(v=>v.sistAVE).length;
+  const anomCount = vehicles.filter(v=>{
+    const uc=[v.umb5,v.umb35,v.umb50,v.umb60,v.umb160,v.umb180].filter(Boolean).length;
+    return uc>3||(v.dmax>0&&v.dmin>0&&v.dmax<=v.dmin)||(v.modoBTS&&!v.modoConv&&!v.modoAVE&&!v.modoRAM);
+  }).length;
+
+  // Operadores
+  const operMap={};
+  vehicles.forEach(v=>{
+    const k=OPERS[v.oper]?OPERS[v.oper]+' ('+v.oper+')':'Cod. '+v.oper;
+    operMap[k]=(operMap[k]||0)+1;
+  });
+  const operList=Object.entries(operMap).sort((a,b)=>b[1]-a[1]);
+  const maxOp=operList[0]?operList[0][1]:1;
+
+  // Velocidades buckets
+  const vbk={'≤80':0,'81-120':0,'121-160':0,'161-200':0,'>200':0};
+  const vbc={'≤80':'#059669','81-120':'#0891b2','121-160':'#1a6fc4','161-200':'#7c3aed','>200':'#dc2626'};
+  vehicles.forEach(v=>{
+    const s=v.velmax;
+    if(s<=80)vbk['≤80']++;else if(s<=120)vbk['81-120']++;else if(s<=160)vbk['121-160']++;else if(s<=200)vbk['161-200']++;else vbk['>200']++;
+  });
+  const maxVB=Math.max(...Object.values(vbk))||1;
+
+  // Umbrales
+  const umbK=['umb5','umb35','umb50','umb60','umb160','umb180'];
+  const umbL=['5','35','50','60','160','180'];
+  const umbC=umbK.map(k=>vehicles.filter(v=>v[k]).length);
+
+  // Modos
+  const modosD=[
+    {k:'modoConv',l:'Convencional',c:'#1a6fc4'},
+    {k:'modoAVE', l:'AVE',         c:'#7c3aed'},
+    {k:'modoRAM', l:'RAM',         c:'#0891b2'},
+    {k:'modoBTS', l:'BTS',         c:'#d97706'},
+  ];
+  const modoN=modosD.map(m=>({...m,n:vehicles.filter(v=>v[m.k]).length}));
+
+  // Diámetros
+  const dmins=vehicles.map(v=>v.dmin).filter(x=>x>0);
+  const dmaxs=vehicles.map(v=>v.dmax).filter(x=>x>0);
+  const avg=arr=>arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):0;
+  const dminMin=dmins.length?Math.min(...dmins):0;
+  const dminMax=dmins.length?Math.max(...dmins):0;
+  const dmaxMin=dmaxs.length?Math.min(...dmaxs):0;
+  const dmaxMax=dmaxs.length?Math.max(...dmaxs):0;
+
+  // Pulsos
+  const pulsM={};
+  vehicles.forEach(v=>{pulsM[v.pulsos]=(pulsM[v.pulsos]||0)+1;});
+  const pulsList=Object.entries(pulsM).map(([k,v])=>({k:Number(k),v})).sort((a,b)=>b.v-a.v);
+  const maxPuls=pulsList[0]?pulsList[0].v:1;
+
+  // Config flags
+  const flags=[
+    {l:'Bicabina',           n:vehicles.filter(v=>v.bicabina).length},
+    {l:'Conex. Registrador', n:vehicles.filter(v=>v.conexSerie).length},
+    {l:'Curvas ASFA-D',      n:vehicles.filter(v=>v.curvasAsfaD).length},
+    {l:'Curvas T=120',       n:vehicles.filter(v=>v.curvT120).length},
+    {l:'5 Reconoc. L1',      n:vehicles.filter(v=>v.recs5).length},
+    {l:'Sal. Corriente',     n:vehicles.filter(v=>v.salCorriente).length},
+    {l:'Fondo 10V',          n:vehicles.filter(v=>v.fondo10V).length},
+    {l:'Mono 2-subsist.',    n:vehicles.filter(v=>v.mono2subsist).length},
+    {l:'Variante 2',         n:vehicles.filter(v=>v.variante2).length},
+  ];
+  const maxFlag=Math.max(...flags.map(f=>f.n))||1;
+
+  // Anomalías detalle
+  const anomList=[];
+  vehicles.forEach(v=>{
+    const uc=[v.umb5,v.umb35,v.umb50,v.umb60,v.umb160,v.umb180].filter(Boolean).length;
+    if(uc>3) anomList.push({t:'err',n:v.name,msg:uc+' umbrales activos (máx. 3)'});
+    if(v.dmax>0&&v.dmin>0&&v.dmax<=v.dmin) anomList.push({t:'err',n:v.name,msg:'Ø máx '+v.dmax+' ≤ Ø mín '+v.dmin+' mm'});
+    if(v.modoBTS&&!v.modoConv&&!v.modoAVE&&!v.modoRAM) anomList.push({t:'warn',n:v.name,msg:'BTS activo sin modo principal'});
+    if(v.suma!==v.chks) anomList.push({t:'warn',n:v.name,msg:'Checksum: calc '+v.suma+' ≠ fichero '+v.chks});
+  });
+  if(!anomList.length) anomList.push({t:'ok',n:'—',msg:'No se han detectado anomalías'});
+
+  // SVG donut
+  function donut(segs){
+    const r=40,cx=52,cy=52,sw=14,circ=2*Math.PI*r;
+    const tot=segs.reduce((s,x)=>s+x.n,0)||1;
+    let off=0,p='';
+    segs.forEach(s=>{
+      const f=s.n/tot,dash=f*circ,gap=(1-f)*circ,rot=off*360-90;
+      p+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+s.c+'" stroke-width="'+sw+'" stroke-dasharray="'+dash.toFixed(2)+' '+gap.toFixed(2)+'" transform="rotate('+rot.toFixed(1)+' '+cx+' '+cy+')" opacity="'+(s.n?1:.12)+'"/>';
+      off+=f;
+    });
+    return '<svg width="104" height="104" viewBox="0 0 104 104">'+p
+      +'<text x="52" y="49" text-anchor="middle" font-size="19" font-weight="800" font-family="JetBrains Mono,monospace" fill="var(--txt)">'+tot+'</text>'
+      +'<text x="52" y="63" text-anchor="middle" font-size="9" fill="var(--td)">UTs</text></svg>';
+  }
+
+  // ── Render ────────────────────────────────────────────────
+  let h='';
+
+  // KPIs
+  h+='<div class="stats-grid">'
+    +'<div class="stats-kpi"><div class="kval">'+N+'</div><div class="klbl">Vehículos (UTs)</div></div>'
+    +'<div class="stats-kpi grn"><div class="kval">'+crcOk+'</div><div class="klbl">Checksums OK</div></div>'
+    +'<div class="stats-kpi '+(crcBad>0?'red':'grn')+'"><div class="kval">'+crcBad+'</div><div class="klbl">Checksums erróneos</div></div>'
+    +'<div class="stats-kpi '+(anomCount>0?'amb':'grn')+'"><div class="kval">'+anomCount+'</div><div class="klbl">Vehículos con avisos</div></div>'
+    +'</div>';
+
+  // Sistema + Fase + Modos
+  h+='<div class="stats-section"><h4>Sistema, Fase y Modos</h4><div class="stats-row3">';
+  const sistSegs=[{n:N-aveCount,c:'#1a6fc4',l:'SICVA'},{n:aveCount,c:'#7c3aed',l:'AVE'}];
+  h+='<div class="stats-box"><div class="stats-box-title">Sistema ASFA</div>'
+    +'<div class="stats-donut-wrap">'+donut(sistSegs)
+    +'<div class="stats-legend">'+sistSegs.map(s=>'<div class="stats-legend-item"><div class="stats-legend-dot" style="background:'+s.c+'"></div>'+s.l+'<span class="stats-legend-val">'+s.n+'</span></div>').join('')
+    +'</div></div></div>';
+
+  const faseSegs=[{n:N-fase2,c:'#0891b2',l:'Fase 1'},{n:fase2,c:'#059669',l:'Fase 2'}];
+  h+='<div class="stats-box"><div class="stats-box-title">Fase</div>'
+    +'<div class="stats-donut-wrap">'+donut(faseSegs)
+    +'<div class="stats-legend">'+faseSegs.map(s=>'<div class="stats-legend-item"><div class="stats-legend-dot" style="background:'+s.c+'"></div>'+s.l+'<span class="stats-legend-val">'+s.n+'</span></div>').join('')
+    +'</div></div></div>';
+
+  h+='<div class="stats-box"><div class="stats-box-title">Modos disponibles</div>'
+    +'<div class="stats-donut-wrap">'+donut(modoN)
+    +'<div class="stats-legend">'+modoN.map(m=>'<div class="stats-legend-item"><div class="stats-legend-dot" style="background:'+m.c+'"></div>'+m.l+'<span class="stats-legend-val">'+m.n+'</span></div>').join('')
+    +'</div></div></div>';
+  h+='</div></div>';
+
+  // Operadores + Velocidades
+  h+='<div class="stats-section"><h4>Distribución por Operador y Velocidad Máxima</h4><div class="stats-row2">';
+  const opColors=['#1a6fc4','#0891b2','#059669','#7c3aed','#d97706','#dc2626'];
+  h+='<div class="stats-box"><div class="stats-box-title">Operadores</div><div class="stats-bar-wrap">';
+  operList.slice(0,8).forEach(([lbl,cnt],i)=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl" title="'+lbl+'">'+lbl+'</span>'
+      +'<div class="stats-bar-track">'+bar(cnt,maxOp,opColors[i%opColors.length])+'</div>'
+      +'<span class="stats-bar-num">'+cnt+'</span><span class="stats-bar-pct">'+pct(cnt,N)+'%</span></div>';
+  });
+  h+='</div></div>';
+
+  h+='<div class="stats-box"><div class="stats-box-title">Rangos Vel. Máx. General (km/h)</div><div class="stats-bar-wrap">';
+  Object.entries(vbk).forEach(([lbl,cnt])=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+lbl+' km/h</span>'
+      +'<div class="stats-bar-track">'+bar(cnt,maxVB,vbc[lbl])+'</div>'
+      +'<span class="stats-bar-num">'+cnt+'</span><span class="stats-bar-pct">'+pct(cnt,N)+'%</span></div>';
+  });
+  h+='</div></div>';
+  h+='</div></div>';
+
+  // Umbrales heatmap
+  h+='<div class="stats-section"><h4>Umbrales de Velocidad</h4>'
+    +'<div class="stats-box"><div class="stats-box-title">Activación de umbrales — nº de vehículos</div>'
+    +'<div class="heat-grid">';
+  umbC.forEach((cnt,i)=>{
+    const r=N?cnt/N:0;
+    const cls=r===0?'hc-0':r<.25?'hc-1':r<.5?'hc-2':r<.75?'hc-3':'hc-4';
+    h+='<div class="heat-cell '+cls+'" title="'+cnt+' de '+N+' ('+pct(cnt,N)+'%)">'
+      +'<div class="hc-val">'+cnt+'</div><div class="hc-lbl">'+umbL[i]+' km/h</div></div>';
+  });
+  h+='</div></div></div>';
+
+  // Tacogenerador + Diámetros
+  h+='<div class="stats-section"><h4>Tacogenerador y Ruedas</h4><div class="stats-row2">';
+  h+='<div class="stats-box"><div class="stats-box-title">Distribución Pulsos/Vuelta</div><div class="stats-bar-wrap">';
+  pulsList.slice(0,8).forEach(({k,v})=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+k+' p/v</span>'
+      +'<div class="stats-bar-track">'+bar(v,maxPuls,'#0891b2')+'</div>'
+      +'<span class="stats-bar-num">'+v+'</span><span class="stats-bar-pct">'+pct(v,N)+'%</span></div>';
+  });
+  h+='</div></div>';
+
+  h+='<div class="stats-box"><div class="stats-box-title">Estadísticas Diámetros de Rueda (mm)</div>'
+    +'<table class="stats-table"><tr><th>Métrica</th><th>Ø Mínimo</th><th>Ø Máximo</th></tr>'
+    +'<tr><td style="font-family:inherit;color:var(--tm)">Promedio</td><td>'+avg(dmins)+'</td><td>'+avg(dmaxs)+'</td></tr>'
+    +'<tr><td style="font-family:inherit;color:var(--tm)">Menor encontrado</td><td>'+(dminMin||'—')+'</td><td>'+(dmaxMin||'—')+'</td></tr>'
+    +'<tr><td style="font-family:inherit;color:var(--tm)">Mayor encontrado</td><td>'+(dminMax||'—')+'</td><td>'+(dmaxMax||'—')+'</td></tr>'
+    +'<tr><td style="font-family:inherit;color:var(--tm)">Vehículos con datos</td><td>'+dmins.length+'</td><td>'+dmaxs.length+'</td></tr>'
+    +'</table></div>';
+  h+='</div></div>';
+
+  // Config flags + Anomalías
+  h+='<div class="stats-section"><h4>Configuración Avanzada y Diagnóstico</h4><div class="stats-row2">';
+  h+='<div class="stats-box"><div class="stats-box-title">Flags de Configuración</div><div class="stats-bar-wrap">';
+  flags.forEach(f=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+f.l+'</span>'
+      +'<div class="stats-bar-track">'+bar(f.n,maxFlag,f.n===0?'#cbd5e1':'#1a6fc4')+'</div>'
+      +'<span class="stats-bar-num">'+f.n+'</span><span class="stats-bar-pct">'+pct(f.n,N)+'%</span></div>';
+  });
+  h+='</div></div>';
+
+  h+='<div class="stats-box"><div class="stats-box-title">Diagnóstico — Avisos y Errores</div><div class="anomaly-list">';
+  anomList.forEach(a=>{
+    const ico=a.t==='ok'?'✓':a.t==='err'?'✗':'⚠';
+    h+='<div class="anomaly-item '+a.t+'"><span class="anomaly-name">'+ico+' '+a.n+'</span><span style="flex:1">'+a.msg+'</span></div>';
+  });
+  h+='</div></div>';
+  h+='</div></div>';
+
+  // Ranking velocidades
+  const vRank=[...vehicles].sort((a,b)=>b.velmax-a.velmax);
+  h+='<div class="stats-section"><h4>Ranking por Velocidad Máxima General</h4>'
+    +'<div class="stats-box"><div class="stats-box-title">Todas las UTs ordenadas por Vel. Máx.</div>'
+    +'<div style="overflow-x:auto"><table class="stats-table">'
+    +'<tr><th>#</th><th>Denominación</th><th>Sistema</th><th>Operador</th><th>Vel.Máx.</th><th>Vel.Bás.</th><th>Vel.BTS</th><th>Ø Mín</th><th>Ø Máx</th><th>Fase</th></tr>';
+  vRank.forEach((v,i)=>{
+    const op=OPERS[v.oper]||v.oper;
+    const vc=v.velmax>=160?'var(--red)':v.velmax>=100?'var(--acc)':'var(--grn)';
+    h+='<tr><td style="color:var(--td)">'+(i+1)+'</td><td>'+v.name+'</td>'
+      +'<td>'+(v.sistAVE?'AVE':'SICVA')+'</td>'
+      +'<td style="font-size:10px">'+op+'</td>'
+      +'<td style="color:'+vc+'">'+v.velmax+' km/h</td>'
+      +'<td>'+v.velbas+' km/h</td>'
+      +'<td>'+v.velbts+' km/h</td>'
+      +'<td>'+v.dmin+' mm</td>'
+      +'<td>'+v.dmax+' mm</td>'
+      +'<td>'+(v.fase2?'F2':'F1')+'</td></tr>';
+  });
+  h+='</table></div></div></div>';
+
+
+  // ── Sección: Distancias S3 ────────────────────────────────
+  const s34act=vehicles.filter(v=>v.distrec>0);
+  const s35act=vehicles.filter(v=>v.distS35>0||v.tiemS35>0);
+  const avgS34=s34act.length?Math.round(s34act.reduce((a,v)=>a+v.distrec,0)/s34act.length):0;
+  const avgS35d=s35act.length?Math.round(s35act.filter(v=>v.distS35>0).reduce((a,v)=>a+v.distS35,0)/(s35act.filter(v=>v.distS35>0).length||1)):0;
+  const avgS35t=s35act.length?Math.round(s35act.filter(v=>v.tiemS35>0).reduce((a,v)=>a+v.tiemS35,0)/(s35act.filter(v=>v.tiemS35>0).length||1)):0;
+
+  h+='<div class="stats-section"><h4>Recordatorio de Parada (Sonidos S3)</h4><div class="stats-row3">';
+  // S3-4
+  h+='<div class="stats-box"><div class="stats-box-title">Distancia aviso S3-4</div><div class="stats-bar-wrap">';
+  const s34Dist={};
+  vehicles.forEach(v=>{const k=v.distrec===0?'Desact.':v.distrec+' dm';s34Dist[k]=(s34Dist[k]||0)+1;});
+  const maxS34=Math.max(...Object.values(s34Dist))||1;
+  Object.entries(s34Dist).sort((a,b)=>b[1]-a[1]).forEach(([k,n])=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+k+'</span>'
+      +'<div class="stats-bar-track">'+bar(n,maxS34,k==='Desact.'?'#cbd5e1':'#0891b2')+'</div>'
+      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
+  });
+  h+='<div style="padding:4px 0 2px;font-size:10px;color:var(--td);border-top:1px solid var(--bd);margin-top:4px">Activo en '+s34act.length+' UTs · media '+avgS34+' dm</div>';
+  h+='</div></div>';
+  // S3-5 distancia
+  h+='<div class="stats-box"><div class="stats-box-title">Distancia aviso S3-5</div><div class="stats-bar-wrap">';
+  const s35Dist={};
+  vehicles.forEach(v=>{const k=v.distS35===0?'Desact.':v.distS35+' dm';s35Dist[k]=(s35Dist[k]||0)+1;});
+  const maxS35d=Math.max(...Object.values(s35Dist))||1;
+  Object.entries(s35Dist).sort((a,b)=>b[1]-a[1]).forEach(([k,n])=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+k+'</span>'
+      +'<div class="stats-bar-track">'+bar(n,maxS35d,k==='Desact.'?'#cbd5e1':'#059669')+'</div>'
+      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
+  });
+  h+='<div style="padding:4px 0 2px;font-size:10px;color:var(--td);border-top:1px solid var(--bd);margin-top:4px">Media '+avgS35d+' dm (excl. desact.)</div>';
+  h+='</div></div>';
+  // S3-5 tiempo
+  h+='<div class="stats-box"><div class="stats-box-title">Tiempo aviso S3-5</div><div class="stats-bar-wrap">';
+  const s35Tiem={};
+  vehicles.forEach(v=>{const k=v.tiemS35===0?'Desact.':v.tiemS35+' s';s35Tiem[k]=(s35Tiem[k]||0)+1;});
+  const maxS35t=Math.max(...Object.values(s35Tiem))||1;
+  Object.entries(s35Tiem).sort((a,b)=>b[1]-a[1]).forEach(([k,n])=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+k+'</span>'
+      +'<div class="stats-bar-track">'+bar(n,maxS35t,k==='Desact.'?'#cbd5e1':'#d97706')+'</div>'
+      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
+  });
+  h+='<div style="padding:4px 0 2px;font-size:10px;color:var(--td);border-top:1px solid var(--bd);margin-top:4px">Media '+avgS35t+' s (excl. desact.)</div>';
+  h+='</div></div>';
+  h+='</div></div>';
+
+  // ── Sección: Velocidades cruzadas ─────────────────────────
+  h+='<div class="stats-section"><h4>Velocidades Cruzadas — Máx. General vs ASFA-Básico vs BTS</h4>';
+  h+='<div class="stats-box"><div class="stats-box-title">Relación entre velocidades por vehículo</div>'
+    +'<div style="overflow-x:auto"><table class="stats-table">'
+    +'<tr><th>Denominación</th><th>V.Máx</th><th>V.Bás.</th><th>V.BTS</th>'
+    +'<th>Básico vs Máx.</th><th>BTS vs Máx.</th><th>Modo BTS</th></tr>';
+  [...vehicles].sort((a,b)=>b.velmax-a.velmax).forEach(v=>{
+    const diffB=v.velmax>0?Math.round((v.velbas/v.velmax)*100):0;
+    const diffBts=v.velmax>0?Math.round((v.velbts/v.velmax)*100):0;
+    const bcol=diffB>=100?'var(--red)':diffB>=80?'var(--amb)':'var(--grn)';
+    const btscol=v.modoBTS?(diffBts>=100?'var(--red)':diffBts>=80?'var(--amb)':'var(--grn)'):'var(--td)';
+    h+='<tr>'
+      +'<td>'+v.name+'</td>'
+      +'<td>'+v.velmax+' km/h</td>'
+      +'<td>'+v.velbas+' km/h</td>'
+      +'<td style="color:'+(v.modoBTS?'var(--txt)':'var(--td)')+'">'+v.velbts+' km/h</td>'
+      +'<td style="color:'+bcol+'">'+diffB+'%</td>'
+      +'<td style="color:'+btscol+'">'+(v.modoBTS?diffBts+'%':'—')+'</td>'
+      +'<td>'+(v.modoBTS?'<span style="color:var(--grn);font-weight:700">✓ Sí</span>':'<span style="color:var(--td)">No</span>')+'</td>'
+      +'</tr>';
+  });
+  h+='</table></div></div></div>';
+
+  // ── Sección: Integridad checksums ─────────────────────────
+  h+='<div class="stats-section"><h4>Integridad de Registros — Checksums</h4><div class="stats-row2">';
+  // Distribución checksum OK/BAD por barra
+  const csOkList=vehicles.filter(v=>v.suma===v.chks);
+  const csBadList=vehicles.filter(v=>v.suma!==v.chks);
+  h+='<div class="stats-box"><div class="stats-box-title">Estado checksum por vehículo</div><div class="stats-bar-wrap">';
+  const csBuckets=[
+    {l:'Correcto (suma = chks)',n:csOkList.length,c:'#059669'},
+    {l:'No coincide',          n:csBadList.length,c:'#dc2626'},
+  ];
+  const maxCs=Math.max(...csBuckets.map(x=>x.n))||1;
+  csBuckets.forEach(b=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+b.l+'</span>'
+      +'<div class="stats-bar-track">'+bar(b.n,maxCs,b.c)+'</div>'
+      +'<span class="stats-bar-num">'+b.n+'</span><span class="stats-bar-pct">'+pct(b.n,N)+'%</span></div>';
+  });
+  h+='</div></div>';
+  // Tabla de errores de checksum o mensaje OK
+  h+='<div class="stats-box"><div class="stats-box-title">Detalle de errores de checksum</div>';
+  if(csBadList.length===0){
+    h+='<div class="anomaly-list"><div class="anomaly-item ok"><span class="anomaly-name">✓ —</span><span>Todos los registros tienen checksum correcto</span></div></div>';
+  } else {
+    h+='<div class="anomaly-list">';
+    csBadList.forEach(v=>{
+      const diff=Math.abs(v.suma-v.chks);
+      h+='<div class="anomaly-item err"><span class="anomaly-name">✗ '+v.name+'</span>'
+        +'<span>Calc: '+v.suma+' (0x'+v.suma.toString(16).toUpperCase()+') · Fich: '+v.chks+' · Δ='+diff+'</span></div>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='</div></div>';
+
+  // ── Sección: Combinaciones de modos ──────────────────────
+  h+='<div class="stats-section"><h4>Combinaciones de Modos de Operación</h4>';
+  const comboMap={};
+  vehicles.forEach(v=>{
+    const parts=[];
+    if(v.modoConv)  parts.push('Conv');
+    if(v.modoAVE)   parts.push('AVE');
+    if(v.modoRAM)   parts.push('RAM');
+    if(v.modoBTS)   parts.push('BTS');
+    const k=parts.length?parts.join('+'):'Ninguno';
+    comboMap[k]=(comboMap[k]||0)+1;
+  });
+  const comboList=Object.entries(comboMap).sort((a,b)=>b[1]-a[1]);
+  const maxCombo=comboList[0]?comboList[0][1]:1;
+  const comboColors={'Conv':'#1a6fc4','AVE':'#7c3aed','RAM':'#0891b2','BTS':'#d97706','Conv+RAM':'#059669','Conv+BTS':'#d97706','Ninguno':'#94a3b8'};
+  h+='<div class="stats-box"><div class="stats-box-title">Combinaciones únicas de modos disponibles</div><div class="stats-bar-wrap">';
+  comboList.forEach(([k,n])=>{
+    const c=comboColors[k]||'#6366f1';
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl" title="'+k+'">'+k+'</span>'
+      +'<div class="stats-bar-track">'+bar(n,maxCombo,c)+'</div>'
+      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
+  });
+  h+='</div></div></div>';
+
+  // ── Sección: Salida analógica y Reconocimientos L1 ────────
+  h+='<div class="stats-section"><h4>Salida Analógica y Reconocimientos L1</h4><div class="stats-row2">';
+  // Salida analógica
+  const salTen=vehicles.filter(v=>!v.salCorriente);
+  const salCor=vehicles.filter(v=>v.salCorriente);
+  const fondo5=salTen.filter(v=>!v.fondo10V).length;
+  const fondo10=salTen.filter(v=>v.fondo10V).length;
+  const salSegs=[
+    {l:'Tensión 0-5V',    n:fondo5,  c:'#0891b2'},
+    {l:'Tensión 0-10V',   n:fondo10, c:'#1a6fc4'},
+    {l:'Corriente 4-20mA',n:salCor.length,c:'#7c3aed'},
+  ];
+  const maxSal=Math.max(...salSegs.map(s=>s.n))||1;
+  h+='<div class="stats-box"><div class="stats-box-title">Tipo de Salida Analógica</div><div class="stats-bar-wrap">';
+  salSegs.forEach(s=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl">'+s.l+'</span>'
+      +'<div class="stats-bar-track">'+bar(s.n,maxSal,s.c)+'</div>'
+      +'<span class="stats-bar-num">'+s.n+'</span><span class="stats-bar-pct">'+pct(s.n,N)+'%</span></div>';
+  });
+  h+='</div></div>';
+  // Reconocimientos L1 por operador
+  // Agrupar por operador x recs5
+  const recsOperMap={};
+  vehicles.forEach(v=>{
+    const opNombre=OPERS[v.oper]||('Cod. '+v.oper);
+    if(!recsOperMap[opNombre]) recsOperMap[opNombre]={r1:0,r5:0,total:0};
+    recsOperMap[opNombre].total++;
+    if(v.recs5) recsOperMap[opNombre].r5++;
+    else        recsOperMap[opNombre].r1++;
+  });
+  const recsOperList=Object.entries(recsOperMap).sort((a,b)=>b[1].total-a[1].total);
+  const recs1total=vehicles.filter(v=>!v.recs5).length;
+  const recs5total=vehicles.filter(v=>v.recs5).length;
+  h+='<div class="stats-box"><div class="stats-box-title">Nº Reconocimientos L1 por Operador (Word1 bit14)</div>'
+    +'<div style="overflow-x:auto"><table class="stats-table">'
+    +'<tr><th>Operador</th><th>UTs</th>'
+    +'<th style="color:#0891b2">1 Reconoc.</th><th style="color:#0891b2">%</th>'
+    +'<th style="color:#7c3aed">5 Reconoc.</th><th style="color:#7c3aed">%</th></tr>';
+  recsOperList.forEach(([op,d])=>{
+    h+='<tr>'
+      +'<td style="font-family:inherit;font-size:10px;color:var(--tm)">'+op+'</td>'
+      +'<td>'+d.total+'</td>'
+      +'<td style="color:#0891b2">'+d.r1+'</td>'
+      +'<td style="color:#0891b2;font-size:10px">'+pct(d.r1,d.total)+'%</td>'
+      +'<td style="color:#7c3aed">'+d.r5+'</td>'
+      +'<td style="color:#7c3aed;font-size:10px">'+pct(d.r5,d.total)+'%</td>'
+      +'</tr>';
+  });
+  h+='<tr style="border-top:2px solid var(--bd2);font-weight:800">'
+    +'<td style="font-family:inherit;color:var(--tm)">TOTAL</td>'
+    +'<td>'+N+'</td>'
+    +'<td style="color:#0891b2">'+recs1total+'</td>'
+    +'<td style="color:#0891b2;font-size:10px">'+pct(recs1total,N)+'%</td>'
+    +'<td style="color:#7c3aed">'+recs5total+'</td>'
+    +'<td style="color:#7c3aed;font-size:10px">'+pct(recs5total,N)+'%</td>'
+    +'</tr>'
+    +'</table></div>'
+    +'<div style="padding:6px 14px 8px;font-size:10px;color:var(--td)">'
+    +'Solo aplica a vehículos Fase 1 (bit14 ignorado en Fase 2)'
+    +'</div></div>';
+  // Combinaciones de umbrales más frecuentes
+  const umbComboMap={};
+  vehicles.forEach(v=>{
+    const activos=[];
+    if(v.umb5)   activos.push('5');
+    if(v.umb35)  activos.push('35');
+    if(v.umb50)  activos.push('50');
+    if(v.umb60)  activos.push('60');
+    if(v.umb160) activos.push('160');
+    if(v.umb180) activos.push('180');
+    const k=activos.length?activos.join('+')+'  km/h':'Ninguno';
+    umbComboMap[k]=(umbComboMap[k]||0)+1;
+  });
+  const umbComboList=Object.entries(umbComboMap).sort((a,b)=>b[1]-a[1]);
+  const maxUmbCombo=umbComboList[0]?umbComboList[0][1]:1;
+  const umbComboColors=['#1a6fc4','#0891b2','#059669','#7c3aed','#d97706','#dc2626','#6366f1','#14b8a6'];
+  h+='<div class="stats-box"><div class="stats-box-title">Combinaciones de Umbrales Activos</div><div class="stats-bar-wrap">';
+  umbComboList.forEach(([k,n],i)=>{
+    h+='<div class="stats-bar-row"><span class="stats-bar-lbl" title="'+k+'">'+k+'</span>'
+      +'<div class="stats-bar-track">'+bar(n,maxUmbCombo,umbComboColors[i%umbComboColors.length])+'</div>'
+      +'<span class="stats-bar-num">'+n+'</span><span class="stats-bar-pct">'+pct(n,N)+'%</span></div>';
+  });
+  const umbSets3=vehicles.filter(v=>[v.umb5,v.umb35,v.umb50,v.umb60,v.umb160,v.umb180].filter(Boolean).length===3).length;
+  h+='<div style="padding:4px 0 2px;font-size:10px;color:var(--td);border-top:1px solid var(--bd);margin-top:4px">'+umbComboList.length+' combinaciones distintas · '+umbSets3+' UTs con exactamente 3 umbrales</div>';
+  h+='</div></div>';
+  h+='</div></div>';
+
+  document.getElementById('stats-body').innerHTML=h;
+  document.getElementById('modal-stats').classList.add('open');
 }
 
 // TOAST & MISC
