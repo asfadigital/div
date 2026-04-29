@@ -767,6 +767,7 @@ function renderV(idx){
 
   ${umbCount>3?`<div class="warn-row">⚠ Advertencia: ${umbCount} umbrales activos (máximo 3 permitidos por la especificación)</div>`:''}
   ${btsWarn?`<div class="warn-row">⚠ Modo BTS activo sin ningún modo principal disponible</div>`:''}
+  ${v.curvT120&&v.velmax>100?`<div class="warn-row">⚠ Curvas T=120 activas pero Vel. Máx. General es ${v.velmax} km/h (>100 km/h) — configuración no válida</div>`:''}
 
   <!-- IDENTIFICACIÓN -->
   <div class="card">
@@ -847,7 +848,16 @@ function renderV(idx){
       ${frRow('Fondo Escala Tensión','Word1 bit13 (solo si tensión)',STR(v.fondo10V?'0-10V':'0-5V'),'fondo10V','tog-fdo',em)}
       ${frRow('Nº Reconoc. L1 ASFA-B','Word1 bit14 (solo Fase1)',STR(v.recs5?'5 reconocimientos':'1 reconocimiento'),'recs5','tog-recs',em)}
       ${frRow('Curvas ASFA-Básico','Word1 bit15',STR(v.curvasAsfaD?'Tablas ASFA-Digital':'Tablas Estándar'),'curvasAsfaD','tog-curv',em)}
-      ${frRow('Curvas T=','Word2 bit0',STR(v.curvT120?'T=120':'T=100'),'curvT120','tog-t',em)}
+      ${(()=>{
+        const tLocked = em && !v.curvT120 && v.velmax>100;
+        const tLabel = 'Curvas T=';
+        const tSub = 'Word2 bit0';
+        const tVal = STR(v.curvT120?'T=120':'T=100') + (tLocked ? ' <span style="font-size:10px;color:var(--td);font-weight:400;margin-left:4px">🔒 Vel.Máx.>100</span>' : '');
+        if(tLocked){
+          return `<div class="fr" style="opacity:.6;cursor:not-allowed" title="T=120 no disponible: Vel. Máx. ${v.velmax} km/h > 100 km/h"><span class="fk">${tLabel}<small>${tSub}</small></span><span class="fv">${tVal}</span></div>`;
+        }
+        return frRow(tLabel,tSub,tVal,'curvT120','tog-t',em);
+      })()}
       ${frRow('Monocabina subsistemas','Word2 bit1',STR(v.mono2subsist?'2 subsistemas':'1 subsistema'),'mono2subsist','tog',em)}
       ${frRow('Variante Monocabina','Word2 bit4',STR(v.variante2?'Variante 2':'Variante 1'),'variante2','tog-var',em)}
     </div>
@@ -924,10 +934,17 @@ function editClick(el,idx){
     'tog-fdo':()=>v.fondo10V=!v.fondo10V,
     'tog-recs':()=>v.recs5=!v.recs5,
     'tog-curv':()=>v.curvasAsfaD=!v.curvasAsfaD,
-    'tog-t':()=>v.curvT120=!v.curvT120,
+    'tog-t':()=>{
+      if(!v.curvT120 && v.velmax>100){
+        toast(`⚠ T=120 solo está disponible para vehículos con Vel. Máx. ≤ 100 km/h (actual: ${v.velmax} km/h)`);
+        return false;
+      }
+      v.curvT120=!v.curvT120;
+    },
     'tog-var':()=>v.variante2=!v.variante2,
   };
-  (tmap[t]||tmap['tog'])();
+  const result=(tmap[t]||tmap['tog'])();
+  if(result===false) return;
   applyMod(idx);
 }
 
